@@ -613,5 +613,5 @@ class headerPacket
         checkSum = ~checkSum;
         return (UInt16)checkSum;
     }
-}
+
 }
