@@ -18,7 +18,7 @@ namespace UDP_send_packet_frame
         static int sizeOfPacket;
 
         bool loopBack = true;
-        public bool LoopBack { get => loopBack; set => loopBack = value; }       
+        public bool LoopBack { get => loopBack; set => loopBack = value; }
 
         //2 thread
         Thread threadListen, threadSend, threadCheckRequest;
@@ -123,28 +123,28 @@ namespace UDP_send_packet_frame
         {
             //_control: 1      2       3      4         5
             //          pause, resume, next, previous, stop
-            if ( (_control == 1)  && (status == status_enum.PLAY))
+            if ((_control == 1) && (status == status_enum.PLAY))
             {
                 status = status_enum.PAUSE;
                 //stopWatchSend.Stop();
                 //threadSend.Suspend();
                 //threadSend.Sleep(Timeout.Infinite);
             }
-            else if((_control == 2) && (status == status_enum.PAUSE))
+            else if ((_control == 2) && (status == status_enum.PAUSE))
             {
                 status = status_enum.PLAY;
                 resumeNextPrevious = 2;
                 //stopWatchSend.Start();
                 //threadSend.Resume();
             }
-            else if(status != status_enum.STOP)
+            else if (status != status_enum.STOP)
             {
                 if (_control == 3) //next
                 {
                     resumeNextPrevious = 3;
                     status = status_enum.PLAY;
                 }
-                else if(_control == 4)
+                else if (_control == 4)
                 {
                     resumeNextPrevious = 4;
                     status = status_enum.PLAY;
@@ -191,7 +191,7 @@ namespace UDP_send_packet_frame
 
         private void threadListenFunc(Stopwatch _watchClient)
         {
-            while(true)
+            while (true)
             {
                 //client need to send ID, string 4 byte
                 int length = 0;
@@ -211,7 +211,7 @@ namespace UDP_send_packet_frame
 
         private void threadCheckRequestFunc(Stopwatch _watchClient)
         {
-            while(true)
+            while (true)
             {
                 for (int i = 0; i < ClientList.Count; i++)
                 {
@@ -227,10 +227,10 @@ namespace UDP_send_packet_frame
         private void threadSendFunc()
         {
             status = status_enum.PLAY;
-            while(true)
+            while (true)
             {
-                for(int i = 0; i < soundList.Count; i++)
-                {                
+                for (int i = 0; i < soundList.Count; i++)
+                {
                     HeaderPacket.IDsong = (byte)(i + 1);
                     HeaderPacket.IDframe = 0;
                     int value_control = 0;
@@ -239,7 +239,7 @@ namespace UDP_send_packet_frame
                     {
                         mp3_buff = File.ReadAllBytes(soundList[i].FilePath);
                     }
-                    
+
                     catch (Exception ex)
                     {
                         Console.WriteLine(ex);
@@ -250,21 +250,21 @@ namespace UDP_send_packet_frame
 
                     if (value_control == 3) //next
                     {
-                       
+
                     }
-                    else if(value_control == 4) //previuos
+                    else if (value_control == 4) //previuos
                     {
-                        if(i > 0)
+                        if (i > 0)
                         {
                             i -= 2;
                             //continue;
                         }
-                        else if(i == 0)
+                        else if (i == 0)
                         {
                             i = soundList.Count - 2;
                         }
                     }
-                    else if(value_control == 5) //stop
+                    else if (value_control == 5) //stop
                     {
                         songID = 0;
                         timePlaying_song_s = 0;
@@ -273,20 +273,20 @@ namespace UDP_send_packet_frame
                     }
 
                 }
-                if(!loopBack)
+                if (!loopBack)
                 {
                     break;
                 }
             }
         }
-        
+
         private int sendPacketMP3(byte[] mp3_buff, int mp3_buff_length)
-        {          
-            
+        {
+
             double timePoint, mark_time = 0;
 
             MP3_frame mp3_reader = new MP3_frame(mp3_buff, mp3_buff_length);
-            if(!mp3_reader.IsValidMp3())
+            if (!mp3_reader.IsValidMp3())
             {
                 return -1;
             }
@@ -307,19 +307,19 @@ namespace UDP_send_packet_frame
             {
                 //change status, return value to threadSendFunc
                 //value: 1-play-next, 2-play-previous, 3-stop
-                if(status == status_enum.STOP)
+                if (status == status_enum.STOP)
                 {
                     return 5;
                 }
-                else if(resumeNextPrevious > 0)
+                else if (resumeNextPrevious > 0)
                 {
                     int tmp = resumeNextPrevious;
                     resumeNextPrevious = 0;
-                    if(tmp == 2)
+                    if (tmp == 2)
                     {
                         stopWatchSend.Start();
                     }
-                    else if(tmp > 4)
+                    else if (tmp > 4)
                     {
                         return 5;
                     }
@@ -328,7 +328,7 @@ namespace UDP_send_packet_frame
                         return tmp;
                     }
                 }
-                else if(status == status_enum.PAUSE)
+                else if (status == status_enum.PAUSE)
                 {
                     stopWatchSend.Stop();
                     Thread.Sleep(500);
@@ -337,9 +337,9 @@ namespace UDP_send_packet_frame
 
                 byte[] sendADU = packet_udp_frameADU(numOfFrame);
 
-                for(int i = 0; i < clientList.Count; i++)
+                for (int i = 0; i < clientList.Count; i++)
                 {
-                    if((!clientList[i].TimeOut) && (clientList[i].On))
+                    if ((!clientList[i].TimeOut) && (clientList[i].On))
                     {
                         for (int j = 0; j < clientList[i].NumSend; j++)
                         {
@@ -361,10 +361,10 @@ namespace UDP_send_packet_frame
                 timePoint = mark_time - stopWatchSend.Elapsed.TotalMilliseconds;
                 if (timePoint > 0)
                 {
-                    Thread.Sleep((int)timePoint);                  
+                    Thread.Sleep((int)timePoint);
                 }
 
-                if(numOfFrame == 100) //maxSizeListAdu
+                if (numOfFrame == 100) //maxSizeListAdu
                 {
                     byte[] tmpsend = { 0xAA, 0xBB, 0xCC, 0xDD };
                     for (int i = 0; i < clientList.Count; i++)
@@ -373,7 +373,7 @@ namespace UDP_send_packet_frame
                         {
                             for (int j = 0; j < clientList[i].NumSend; j++)
                             {
-                                for(int k = 0; k < 10; k++)
+                                for (int k = 0; k < 10; k++)
                                 {
                                     try
                                     {
@@ -385,114 +385,114 @@ namespace UDP_send_packet_frame
                                     }
                                     Thread.Sleep(100);
                                 }
-                                
+
                             }
                         }
                     }
                     Console.WriteLine("Done");
                     Thread.Sleep(50000);
-            }
-            //done a song
-            timePlaying_song_s = 0;
-            duration_song_s = 0;
-            stopWatchSend.Stop();
-            return 0;
-        }
-        static private int packet_udp_frameMP3(byte[] _send_buff, MP3_frame _mp3_reader)
-        {
-            //reset packet header
-            HeaderPacket.NumOffFrame = 0;
-            HeaderPacket.TotalLength = HeaderPacket.Length;
-            while (true)
-            {
-                if (left_frame_not_packet)
-                {
-                    left_frame_not_packet = false;
                 }
-                else if (_mp3_reader.ReadNextFrame())
-                {
-
-                }
-                else
-                {
-                    break;
-                }
-                //check space for cmemcpy //(4+4) for numOfFrame, totalLength
-                if (_mp3_reader.Frame_size <= (Max_send_buff_length - HeaderPacket.TotalLength))
-                {
-                    Buffer.BlockCopy(_mp3_reader.Mp3_buff, _mp3_reader.Start_frame, _send_buff, HeaderPacket.TotalLength, _mp3_reader.Frame_size);
-                    HeaderPacket.TotalLength += (UInt16)(_mp3_reader.Frame_size);
-                    HeaderPacket.NumOffFrame++;
-                }
-                else
-                {
-                    left_frame_not_packet = true;
-                    break;
-                }
+                //done a song
+                timePlaying_song_s = 0;
+                duration_song_s = 0;
+                stopWatchSend.Stop();
+                return 0;
             }
-
-            //copy header to _send_buff
-            HeaderPacket.copyHeaderToBuffer(_send_buff);
-
-            sizeOfPacket = HeaderPacket.TotalLength;
-
-            //increase IDframe
-            HeaderPacket.IDframe++;
-
-            return HeaderPacket.NumOffFrame;
-        }
-        static int[] orderArray = { 0, 2, 4, 6, 1, 3, 5, 7 };
-        static int orderArrayIndex = 0;
-        static int frameIndex = 0;
-        static private byte[] packet_udp_frameADU(int _numOfFrame)
-        {
-            int iListADU = (_numOfFrame / 8) * 8 + orderArray[orderArrayIndex];
-            int sizeOfADUpacket = aduFrameList[iListADU].Length + 2 + 4; //2B checksum, 4B id adu frame
-            byte[] tmpADUpacket = new byte[sizeOfADUpacket];
-            //copy adu id
-            Buffer.BlockCopy(BitConverter.GetBytes(iListADU), 0, tmpADUpacket, 2, 4);
-            //copy adu data
-            Buffer.BlockCopy(aduFrameList[iListADU], 0, tmpADUpacket, 2 + 4, aduFrameList[iListADU].Length);
-            //checksum
-            UInt16 checkSum = caculateChecksum(tmpADUpacket, 2, 4 + aduFrameList[iListADU].Length);
-            //copy checksum
-            Buffer.BlockCopy(BitConverter.GetBytes(checkSum), 0, tmpADUpacket, 0, 2);
-
-            //
-            orderArrayIndex++;
-            if(orderArrayIndex >= 8)
+            static private int packet_udp_frameMP3(byte[] _send_buff, MP3_frame _mp3_reader)
             {
-                orderArrayIndex = 0;
-                //frameIndex++;
+                //reset packet header
+                HeaderPacket.NumOffFrame = 0;
+                HeaderPacket.TotalLength = HeaderPacket.Length;
+                while (true)
+                {
+                    if (left_frame_not_packet)
+                    {
+                        left_frame_not_packet = false;
+                    }
+                    else if (_mp3_reader.ReadNextFrame())
+                    {
+
+                    }
+                    else
+                    {
+                        break;
+                    }
+                    //check space for cmemcpy //(4+4) for numOfFrame, totalLength
+                    if (_mp3_reader.Frame_size <= (Max_send_buff_length - HeaderPacket.TotalLength))
+                    {
+                        Buffer.BlockCopy(_mp3_reader.Mp3_buff, _mp3_reader.Start_frame, _send_buff, HeaderPacket.TotalLength, _mp3_reader.Frame_size);
+                        HeaderPacket.TotalLength += (UInt16)(_mp3_reader.Frame_size);
+                        HeaderPacket.NumOffFrame++;
+                    }
+                    else
+                    {
+                        left_frame_not_packet = true;
+                        break;
+                    }
+                }
+
+                //copy header to _send_buff
+                HeaderPacket.copyHeaderToBuffer(_send_buff);
+
+                sizeOfPacket = HeaderPacket.TotalLength;
+
+                //increase IDframe
+                HeaderPacket.IDframe++;
+
+                return HeaderPacket.NumOffFrame;
+            }
+            static int[] orderArray = { 0, 2, 4, 6, 1, 3, 5, 7 };
+            static int orderArrayIndex = 0;
+            static int frameIndex = 0;
+            static private byte[] packet_udp_frameADU(int _numOfFrame)
+            {
+                int iListADU = (_numOfFrame / 8) * 8 + orderArray[orderArrayIndex];
+                int sizeOfADUpacket = aduFrameList[iListADU].Length + 2 + 4; //2B checksum, 4B id adu frame
+                byte[] tmpADUpacket = new byte[sizeOfADUpacket];
+                //copy adu id
+                Buffer.BlockCopy(BitConverter.GetBytes(iListADU), 0, tmpADUpacket, 2, 4);
+                //copy adu data
+                Buffer.BlockCopy(aduFrameList[iListADU], 0, tmpADUpacket, 2 + 4, aduFrameList[iListADU].Length);
+                //checksum
+                UInt16 checkSum = caculateChecksum(tmpADUpacket, 2, 4 + aduFrameList[iListADU].Length);
+                //copy checksum
+                Buffer.BlockCopy(BitConverter.GetBytes(checkSum), 0, tmpADUpacket, 0, 2);
+
+                //
+                orderArrayIndex++;
+                if (orderArrayIndex >= 8)
+                {
+                    orderArrayIndex = 0;
+                    //frameIndex++;
+                }
+
+                return tmpADUpacket;
             }
 
-            return tmpADUpacket;
-        }
-
-        static UInt16 caculateChecksum(byte[] data, int offset, int length)
-        {
-            UInt32 checkSum = 0;
-            int index = offset;
-            while (length > 1)
+            static UInt16 caculateChecksum(byte[] data, int offset, int length)
             {
-                checkSum += ((UInt32)data[index] << 8) | ((UInt32)data[index + 1]); //little edian
-                length -= 2;
-                index += 2;
+                UInt32 checkSum = 0;
+                int index = offset;
+                while (length > 1)
+                {
+                    checkSum += ((UInt32)data[index] << 8) | ((UInt32)data[index + 1]); //little edian
+                    length -= 2;
+                    index += 2;
+                }
+                if (length == 1) // still have 1 byte
+                {
+                    checkSum += ((UInt32)data[index] << 8);
+                }
+                while ((checkSum >> 16) > 0) //checkSum > 0xFFFF
+                {
+                    checkSum = (checkSum & 0xFFFF) + (checkSum >> 16);
+                }
+                //inverse
+                checkSum = ~checkSum;
+                return (UInt16)checkSum;
             }
-            if (length == 1) // still have 1 byte
-            {
-                checkSum += ((UInt32)data[index] << 8);
-            }
-            while ((checkSum >> 16) > 0) //checkSum > 0xFFFF
-            {
-                checkSum = (checkSum & 0xFFFF) + (checkSum >> 16);
-            }
-            //inverse
-            checkSum = ~checkSum;
-            return (UInt16)checkSum;
         }
     }
-
     class client_IPEndPoint
     {
         // biến này về sau sẽ chứa địa chỉ của tiến trình client nào gửi gói tin tới

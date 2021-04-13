@@ -12,6 +12,7 @@ namespace V2UDPmp3Server
     class Program
     {
         public static List<client_IPEndPoint> clientList;
+        
         static void Main(string[] args)
         {
             //Console.WriteLine("Hello World!");
