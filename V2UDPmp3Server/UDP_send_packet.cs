@@ -366,7 +366,8 @@ namespace UDP_send_packet_frame
 
                 if (numOfFrame == 100) //maxSizeListAdu
                 {
-                    byte[] tmpsend = { 0xAA, 0xBB, 0xCC, 0xDD };
+                    byte[] tmpsend = new byte[100];
+                    tmpsend[0] = 0xAA;
                     for (int i = 0; i < clientList.Count; i++)
                     {
                         if ((!clientList[i].TimeOut) && (clientList[i].On))
@@ -398,195 +399,76 @@ namespace UDP_send_packet_frame
                 stopWatchSend.Stop();
                 return 0;
             }
-            static private int packet_udp_frameMP3(byte[] _send_buff, MP3_frame _mp3_reader)
-            {
-                //reset packet header
-                HeaderPacket.NumOffFrame = 0;
-                HeaderPacket.TotalLength = HeaderPacket.Length;
-                while (true)
-                {
-                    if (left_frame_not_packet)
-                    {
-                        left_frame_not_packet = false;
-                    }
-                    else if (_mp3_reader.ReadNextFrame())
-                    {
-
-                    }
-                    else
-                    {
-                        break;
-                    }
-                    //check space for cmemcpy //(4+4) for numOfFrame, totalLength
-                    if (_mp3_reader.Frame_size <= (Max_send_buff_length - HeaderPacket.TotalLength))
-                    {
-                        Buffer.BlockCopy(_mp3_reader.Mp3_buff, _mp3_reader.Start_frame, _send_buff, HeaderPacket.TotalLength, _mp3_reader.Frame_size);
-                        HeaderPacket.TotalLength += (UInt16)(_mp3_reader.Frame_size);
-                        HeaderPacket.NumOffFrame++;
-                    }
-                    else
-                    {
-                        left_frame_not_packet = true;
-                        break;
-                    }
-                }
-
-                //copy header to _send_buff
-                HeaderPacket.copyHeaderToBuffer(_send_buff);
-
-                sizeOfPacket = HeaderPacket.TotalLength;
-
-                //increase IDframe
-                HeaderPacket.IDframe++;
-
-                return HeaderPacket.NumOffFrame;
-            }
-            static int[] orderArray = { 0, 2, 4, 6, 1, 3, 5, 7 };
-            static int orderArrayIndex = 0;
-            static int frameIndex = 0;
-            static private byte[] packet_udp_frameADU(int _numOfFrame)
-            {
-                int iListADU = (_numOfFrame / 8) * 8 + orderArray[orderArrayIndex];
-                int sizeOfADUpacket = aduFrameList[iListADU].Length + 2 + 4; //2B checksum, 4B id adu frame
-                byte[] tmpADUpacket = new byte[sizeOfADUpacket];
-                //copy adu id
-                Buffer.BlockCopy(BitConverter.GetBytes(iListADU), 0, tmpADUpacket, 2, 4);
-                //copy adu data
-                Buffer.BlockCopy(aduFrameList[iListADU], 0, tmpADUpacket, 2 + 4, aduFrameList[iListADU].Length);
-                //checksum
-                UInt16 checkSum = caculateChecksum(tmpADUpacket, 2, 4 + aduFrameList[iListADU].Length);
-                //copy checksum
-                Buffer.BlockCopy(BitConverter.GetBytes(checkSum), 0, tmpADUpacket, 0, 2);
-
-                //
-                orderArrayIndex++;
-                if (orderArrayIndex >= 8)
-                {
-                    orderArrayIndex = 0;
-                    //frameIndex++;
-                }
-
-                return tmpADUpacket;
-            }
-
-            static UInt16 caculateChecksum(byte[] data, int offset, int length)
-            {
-                UInt32 checkSum = 0;
-                int index = offset;
-                while (length > 1)
-                {
-                    checkSum += ((UInt32)data[index] << 8) | ((UInt32)data[index + 1]); //little edian
-                    length -= 2;
-                    index += 2;
-                }
-                if (length == 1) // still have 1 byte
-                {
-                    checkSum += ((UInt32)data[index] << 8);
-                }
-                while ((checkSum >> 16) > 0) //checkSum > 0xFFFF
-                {
-                    checkSum = (checkSum & 0xFFFF) + (checkSum >> 16);
-                }
-                //inverse
-                checkSum = ~checkSum;
-                return (UInt16)checkSum;
-            }
         }
-    }
-    class client_IPEndPoint
-    {
-        // biến này về sau sẽ chứa địa chỉ của tiến trình client nào gửi gói tin tới
-        EndPoint ipEndPoint_client = new IPEndPoint(IPAddress.Any, 0);
-
-        string id_client;
-
-        public EndPoint IPEndPoint_client { get => ipEndPoint_client; set => ipEndPoint_client = value; }
-        public string ID_client { get => id_client; set => id_client = value; }       
-
-        double timeStamp_ms = 0;
-
-        bool timeOut = true; //timeOut = true, that mean don't receive request in last 5s, and don't send
-
-        bool on; //change this on app
-
-        int numSend = 1; //multi packet is sent to client to improve UDP loss
-        public int NumSend { get => numSend; set => numSend = value; }
-
-        //server just sends to client when timeOut == false and On == true
-
-        public double TimeStamp_ms { get => timeStamp_ms; set => timeStamp_ms = value; }
-        public bool TimeOut { get => timeOut; set => timeOut = value; }
-        public bool On { get => on; set => on = value; }      
-    }
-
-    class soundTrack
-    {
-        string filePath;
-        int duration_ms = 0; //duration of a sound Track
-        int playingTime_ms = 0; //current time playing of sound track
-
-        public string FilePath { get => filePath; set => filePath = value; }
-        public int Duration_ms { get => duration_ms; }
-        public int PlayingTime_ms { get => playingTime_ms;  }
-    }
-
-    class headerPacket
-    {
-        ////header of UDP packet
-        //1-byte: volume, 1-byte: ID_song, 2-byte: totalLength
-        //4-byte: ID_frame
-        //2-byte: numOfFrame, 2-byte checksum
-        //de cho an toan, nen tinh checksum cho header nay
-
-        //total byte in header
-        UInt16 length = 14;
-        byte volume = 0x00; // max:min 0x00:0xFE
-        byte id_song;
-        UInt16 totalLength;
-        UInt32 id_frame;
-        UInt16 numOffFrame;
-        UInt16 checkSum;
-        UInt16 checkSumData;
-
-        public UInt16 Length { get => length; }
-
-        internal byte IDsong { get => id_song; set => id_song = value; }
-        internal ushort TotalLength { get => totalLength; set => totalLength = value; }
-        internal uint IDframe { get => id_frame; set => id_frame = value; }
-        internal ushort NumOffFrame { get => numOffFrame; set => numOffFrame = value; }
-
-        internal byte Volume
+        static private int packet_udp_frameMP3(byte[] _send_buff, MP3_frame _mp3_reader)
         {
-            get { return volume; }
-            set
+            //reset packet header
+            HeaderPacket.NumOffFrame = 0;
+            HeaderPacket.TotalLength = HeaderPacket.Length;
+            while (true)
             {
-                if (value == 0xFF)
-                    volume = 0xFE;
+                if (left_frame_not_packet)
+                {
+                    left_frame_not_packet = false;
+                }
+                else if (_mp3_reader.ReadNextFrame())
+                {
+
+                }
                 else
-                    volume = value;
+                {
+                    break;
+                }
+                //check space for cmemcpy //(4+4) for numOfFrame, totalLength
+                if (_mp3_reader.Frame_size <= (Max_send_buff_length - HeaderPacket.TotalLength))
+                {
+                    Buffer.BlockCopy(_mp3_reader.Mp3_buff, _mp3_reader.Start_frame, _send_buff, HeaderPacket.TotalLength, _mp3_reader.Frame_size);
+                    HeaderPacket.TotalLength += (UInt16)(_mp3_reader.Frame_size);
+                    HeaderPacket.NumOffFrame++;
+                }
+                else
+                {
+                    left_frame_not_packet = true;
+                    break;
+                }
             }
+
+            //copy header to _send_buff
+            HeaderPacket.copyHeaderToBuffer(_send_buff);
+
+            sizeOfPacket = HeaderPacket.TotalLength;
+
+            //increase IDframe
+            HeaderPacket.IDframe++;
+
+            return HeaderPacket.NumOffFrame;
         }
+        static int[] orderArray = { 0, 2, 4, 6, 1, 3, 5, 7 };
+        static int orderArrayIndex = 0;
+        static int frameIndex = 0;
+        static private byte[] packet_udp_frameADU(int _numOfFrame)
+        {
+            int iListADU = (_numOfFrame / 8) * 8 + orderArray[orderArrayIndex];
+            int sizeOfADUpacket = aduFrameList[iListADU].Length + 2 + 4; //2B checksum, 4B id adu frame
+            byte[] tmpADUpacket = new byte[sizeOfADUpacket];
+            //copy adu id
+            Buffer.BlockCopy(BitConverter.GetBytes(iListADU), 0, tmpADUpacket, 2, 4);
+            //copy adu data
+            Buffer.BlockCopy(aduFrameList[iListADU], 0, tmpADUpacket, 2 + 4, aduFrameList[iListADU].Length);
+            //checksum
+            UInt16 checkSum = caculateChecksum(tmpADUpacket, 2, 4 + aduFrameList[iListADU].Length);
+            //copy checksum
+            Buffer.BlockCopy(BitConverter.GetBytes(checkSum), 0, tmpADUpacket, 0, 2);
 
-        internal void copyHeaderToBuffer(byte[] _buffer)
-        {          
-            _buffer[0] = volume;
-            _buffer[1] = id_song;
-            byte[] tmp_byte = new byte[4];
-            tmp_byte = BitConverter.GetBytes(totalLength);
-            Buffer.BlockCopy(tmp_byte, 0, _buffer, 2, 2);
-            tmp_byte = BitConverter.GetBytes(id_frame);
-            Buffer.BlockCopy(tmp_byte, 0, _buffer, 4, 4);
-            tmp_byte = BitConverter.GetBytes(numOffFrame);
-            Buffer.BlockCopy(tmp_byte, 0, _buffer, 8, 2);
+            //
+            orderArrayIndex++;
+            if (orderArrayIndex >= 8)
+            {
+                orderArrayIndex = 0;
+                //frameIndex++;
+            }
 
-            //caculate checksum for header and checksum for data
-            checkSum = caculateChecksum(_buffer, 0, length - 4); //header
-            checkSumData = caculateChecksum(_buffer, length, totalLength - length);
-
-            tmp_byte = BitConverter.GetBytes(checkSum);
-            Buffer.BlockCopy(tmp_byte, 0, _buffer, 10, 2);
-            tmp_byte = BitConverter.GetBytes(checkSumData);
-            Buffer.BlockCopy(tmp_byte, 0, _buffer, 12, 2);
+            return tmpADUpacket;
         }
 
         static UInt16 caculateChecksum(byte[] data, int offset, int length)
@@ -599,11 +481,11 @@ namespace UDP_send_packet_frame
                 length -= 2;
                 index += 2;
             }
-            if(length == 1) // still have 1 byte
+            if (length == 1) // still have 1 byte
             {
                 checkSum += ((UInt32)data[index] << 8);
             }
-            while((checkSum >> 16) > 0) //checkSum > 0xFFFF
+            while ((checkSum >> 16) > 0) //checkSum > 0xFFFF
             {
                 checkSum = (checkSum & 0xFFFF) + (checkSum >> 16);
             }
@@ -612,4 +494,124 @@ namespace UDP_send_packet_frame
             return (UInt16)checkSum;
         }
     }
+}
+class client_IPEndPoint
+{
+    // biến này về sau sẽ chứa địa chỉ của tiến trình client nào gửi gói tin tới
+    EndPoint ipEndPoint_client = new IPEndPoint(IPAddress.Any, 0);
+
+    string id_client;
+
+    public EndPoint IPEndPoint_client { get => ipEndPoint_client; set => ipEndPoint_client = value; }
+    public string ID_client { get => id_client; set => id_client = value; }
+
+    double timeStamp_ms = 0;
+
+    bool timeOut = true; //timeOut = true, that mean don't receive request in last 5s, and don't send
+
+    bool on; //change this on app
+
+    int numSend = 1; //multi packet is sent to client to improve UDP loss
+    public int NumSend { get => numSend; set => numSend = value; }
+
+    //server just sends to client when timeOut == false and On == true
+
+    public double TimeStamp_ms { get => timeStamp_ms; set => timeStamp_ms = value; }
+    public bool TimeOut { get => timeOut; set => timeOut = value; }
+    public bool On { get => on; set => on = value; }
+}
+
+class soundTrack
+{
+    string filePath;
+    int duration_ms = 0; //duration of a sound Track
+    int playingTime_ms = 0; //current time playing of sound track
+
+    public string FilePath { get => filePath; set => filePath = value; }
+    public int Duration_ms { get => duration_ms; }
+    public int PlayingTime_ms { get => playingTime_ms; }
+}
+
+class headerPacket
+{
+    ////header of UDP packet
+    //1-byte: volume, 1-byte: ID_song, 2-byte: totalLength
+    //4-byte: ID_frame
+    //2-byte: numOfFrame, 2-byte checksum
+    //de cho an toan, nen tinh checksum cho header nay
+
+    //total byte in header
+    UInt16 length = 14;
+    byte volume = 0x00; // max:min 0x00:0xFE
+    byte id_song;
+    UInt16 totalLength;
+    UInt32 id_frame;
+    UInt16 numOffFrame;
+    UInt16 checkSum;
+    UInt16 checkSumData;
+
+    public UInt16 Length { get => length; }
+
+    internal byte IDsong { get => id_song; set => id_song = value; }
+    internal ushort TotalLength { get => totalLength; set => totalLength = value; }
+    internal uint IDframe { get => id_frame; set => id_frame = value; }
+    internal ushort NumOffFrame { get => numOffFrame; set => numOffFrame = value; }
+
+    internal byte Volume
+    {
+        get { return volume; }
+        set
+        {
+            if (value == 0xFF)
+                volume = 0xFE;
+            else
+                volume = value;
+        }
+    }
+
+    internal void copyHeaderToBuffer(byte[] _buffer)
+    {
+        _buffer[0] = volume;
+        _buffer[1] = id_song;
+        byte[] tmp_byte = new byte[4];
+        tmp_byte = BitConverter.GetBytes(totalLength);
+        Buffer.BlockCopy(tmp_byte, 0, _buffer, 2, 2);
+        tmp_byte = BitConverter.GetBytes(id_frame);
+        Buffer.BlockCopy(tmp_byte, 0, _buffer, 4, 4);
+        tmp_byte = BitConverter.GetBytes(numOffFrame);
+        Buffer.BlockCopy(tmp_byte, 0, _buffer, 8, 2);
+
+        //caculate checksum for header and checksum for data
+        checkSum = caculateChecksum(_buffer, 0, length - 4); //header
+        checkSumData = caculateChecksum(_buffer, length, totalLength - length);
+
+        tmp_byte = BitConverter.GetBytes(checkSum);
+        Buffer.BlockCopy(tmp_byte, 0, _buffer, 10, 2);
+        tmp_byte = BitConverter.GetBytes(checkSumData);
+        Buffer.BlockCopy(tmp_byte, 0, _buffer, 12, 2);
+    }
+
+    static UInt16 caculateChecksum(byte[] data, int offset, int length)
+    {
+        UInt32 checkSum = 0;
+        int index = offset;
+        while (length > 1)
+        {
+            checkSum += ((UInt32)data[index] << 8) | ((UInt32)data[index + 1]); //little edian
+            length -= 2;
+            index += 2;
+        }
+        if (length == 1) // still have 1 byte
+        {
+            checkSum += ((UInt32)data[index] << 8);
+        }
+        while ((checkSum >> 16) > 0) //checkSum > 0xFFFF
+        {
+            checkSum = (checkSum & 0xFFFF) + (checkSum >> 16);
+        }
+        //inverse
+        checkSum = ~checkSum;
+        return (UInt16)checkSum;
+    }
+}
 }
