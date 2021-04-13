@@ -357,7 +357,7 @@ namespace UDP_send_packet_frame
                 orderFrame++;
                 
                 //Console.WriteLine(orderFrame);
-                if (orderFrame >= 100) //maxSizeListAdu
+                if (orderFrame >= 700) //maxSizeListAdu
                 {
                     byte[] tmpsend = new byte[100];
                     tmpsend[0] = 0xAA;
@@ -384,7 +384,7 @@ namespace UDP_send_packet_frame
                             }
                         }
                     }
-                    Console.WriteLine("Done");
+                    //Console.WriteLine("Done");
                     //Thread.Sleep(50000);
                     break;
                 }
