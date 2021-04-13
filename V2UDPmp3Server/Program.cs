@@ -4,6 +4,8 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using UDP_send_packet_frame;
+using MP3_ADU_namespace;
+using System.Linq;
 
 namespace V2UDPmp3Server
 {
@@ -32,9 +34,9 @@ namespace V2UDPmp3Server
 
             List<soundTrack> soundList = new List<soundTrack>()
             {
-                new soundTrack(){ FilePath = @"E:\truyenthanhproject\read_mp3\duaComChoMeEmDiCay.mp3"},
-                new soundTrack(){ FilePath = @"E:\truyenthanhproject\read_mp3\emYeuTruongEm.mp3"},
-                new soundTrack(){ FilePath = @"E:\truyenthanhproject\read_mp3\xeDap.mp3"}
+                new soundTrack(){ FilePath = @"E:\bai111.mp3"},
+                new soundTrack(){ FilePath = @"E:\bai111.mp3"},
+                new soundTrack(){ FilePath = @"E:\bai111.mp3"}
             };
 
             List<soundTrack> soundListServer = new List<soundTrack>()
@@ -47,9 +49,37 @@ namespace V2UDPmp3Server
             UDPsocket udpSocket = new UDPsocket();
             //var _status = udpSocket.Status; //get status (PLAY, PAUSE, STOP)
 
+            string filePath = "bai111.mp3";
+            byte[] mp3_buff = File.ReadAllBytes(filePath).Skip(237).ToArray();
+            //MP3_ADU mp3file = new MP3_ADU(mp3_buff, mp3_buff.Length);
+            //int numFrame = 0;
+
+            ADU_frame adufile = new ADU_frame(mp3_buff, mp3_buff.Length);
+            int aduNumFrame = 0;
+
+            //FileStream stream = new FileStream(@"E:\test10.mp3", FileMode.Append);
+
+            List<byte[]> aduFrameList = new List<byte[]>();
+            while (true)
+            {
+                byte[] aduframe = adufile.ReadNextADUFrame();
+                if (aduframe != null)
+                {
+                    aduNumFrame++;
+                    //AppendAllBytes(@"E:\adu.mp3", aduframe);
+                    //stream.Write(aduframe, 0, aduframe.Length);
+                    aduFrameList.Add(aduframe);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            //stream.Close();
+
             //launch
             //udpSocket.launchUDPsocket(soundList, clientList);
-            udpSocket.launchUDPsocket(soundListServer, clientList);
+            udpSocket.launchUDPsocket(soundListServer, clientList, aduFrameList);
             //create UDP socket listen from client
             udpSocket.UDPsocketListen();
             //create UDP socket for sending mp3 frame to client

@@ -50,7 +50,7 @@ namespace UDP_send_packet_frame
         static headerPacket HeaderPacket = new headerPacket();
 
         //for threadSend
-        const int Max_send_buff_length = 534;//1472; //534
+        const int Max_send_buff_length = 1472;//1472; //534
         byte[] sendBuffer = new byte[Max_send_buff_length];
 
         //List soundTrack
@@ -63,13 +63,16 @@ namespace UDP_send_packet_frame
         public enum status_enum { PLAY, PAUSE, STOP };
         status_enum status = status_enum.STOP;
         public status_enum Status { get => status; }
-               
 
-        public bool launchUDPsocket(List<soundTrack> _soundList, List<client_IPEndPoint> _clientList)
+        static List<byte[]> aduFrameList = new List<byte[]>();
+        static int maxSizeListAdu;
+
+        public bool launchUDPsocket(List<soundTrack> _soundList, List<client_IPEndPoint> _clientList, List<byte[]> _aduFrameList)
         {
+            aduFrameList = _aduFrameList;
             soundList = _soundList;
             clientList = _clientList;
-
+            maxSizeListAdu = (aduFrameList.Count / 8) * 8;
             try
             {
                 socket.Bind(localEndPoint);
@@ -223,7 +226,6 @@ namespace UDP_send_packet_frame
         }
         private void threadSendFunc()
         {
-            
             status = status_enum.PLAY;
             while(true)
             {
@@ -277,13 +279,13 @@ namespace UDP_send_packet_frame
                 }
             }
         }
-
+        
         private int sendPacketMP3(byte[] mp3_buff, int mp3_buff_length)
         {          
             
-            double timePoint, mark_time = 0;           
+            double timePoint, mark_time = 0;
 
-            var mp3_reader = new MP3_frame(mp3_buff, mp3_buff_length);
+            MP3_frame mp3_reader = new MP3_frame(mp3_buff, mp3_buff_length);
             if(!mp3_reader.IsValidMp3())
             {
                 return -1;
@@ -293,7 +295,7 @@ namespace UDP_send_packet_frame
             //count total Frame of mp3
             duration_song_s = mp3_reader.countFrame() * (int)mp3_reader.TimePerFrame_ms / 1000;
 
-            int numOfFrame;
+            int numOfFrame = 0;
 
             SocketFlags socketFlag = new SocketFlags();
 
@@ -333,11 +335,7 @@ namespace UDP_send_packet_frame
                     continue;
                 }
 
-                numOfFrame = packet_udp_frameMP3(sendBuffer, mp3_reader);
-                if (numOfFrame < 1)
-                {
-                    break;
-                }
+                byte[] sendADU = packet_udp_frameADU(numOfFrame);
 
                 for(int i = 0; i < clientList.Count; i++)
                 {
@@ -347,7 +345,7 @@ namespace UDP_send_packet_frame
                         {
                             try
                             {
-                                socket.SendTo(sendBuffer, sizeOfPacket, socketFlag, clientList[i].IPEndPoint_client);
+                                socket.SendTo(sendADU, sendADU.Length, socketFlag, clientList[i].IPEndPoint_client);
                             }
                             catch (Exception ex)
                             {
@@ -356,8 +354,8 @@ namespace UDP_send_packet_frame
                         }
                     }
                 }
-
-                mark_time += framemp3_time * numOfFrame; //point to next time frame
+                numOfFrame++;
+                mark_time = 24 * numOfFrame; //point to next time frame
                 //get current time playing
                 timePlaying_song_s = (int)mark_time / 1000; //second
                 timePoint = mark_time - stopWatchSend.Elapsed.TotalMilliseconds;
@@ -365,9 +363,29 @@ namespace UDP_send_packet_frame
                 {
                     Thread.Sleep((int)timePoint);                  
                 }
-                #if (DEBUG)
-                    //Thread.Sleep(1000); //1s
-                #endif
+
+                if(numOfFrame == maxSizeListAdu)
+                {
+                    byte[] tmpsend = { 0xAA, 0xBB, 0xCC, 0xDD };
+                    for (int i = 0; i < clientList.Count; i++)
+                    {
+                        if ((!clientList[i].TimeOut) && (clientList[i].On))
+                        {
+                            for (int j = 0; j < clientList[i].NumSend; j++)
+                            {
+                                try
+                                {
+                                    socket.SendTo(tmpsend, tmpsend.Length, socketFlag, clientList[i].IPEndPoint_client);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine(ex);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
             }
             //done a song
             timePlaying_song_s = 0;
@@ -418,6 +436,56 @@ namespace UDP_send_packet_frame
 
             return HeaderPacket.NumOffFrame;
         }
+        static int[] orderArray = { 0, 2, 4, 6, 1, 3, 5, 7 };
+        static int orderArrayIndex = 0;
+        static int frameIndex = 0;
+        static private byte[] packet_udp_frameADU(int _numOfFrame)
+        {
+            int iListADU = (_numOfFrame / 8) * 8 + orderArray[orderArrayIndex];
+            int sizeOfADUpacket = aduFrameList[iListADU].Length + 2 + 4; //2B checksum, 4B id adu frame
+            byte[] tmpADUpacket = new byte[sizeOfADUpacket];
+            //copy adu id
+            Buffer.BlockCopy(BitConverter.GetBytes(iListADU), 0, tmpADUpacket, 2, 4);
+            //copy adu data
+            Buffer.BlockCopy(aduFrameList[iListADU], 0, tmpADUpacket, 2 + 4, aduFrameList[iListADU].Length);
+            //checksum
+            UInt16 checkSum = caculateChecksum(tmpADUpacket, 2, 4 + aduFrameList[iListADU].Length);
+            //copy checksum
+            Buffer.BlockCopy(BitConverter.GetBytes(checkSum), 0, tmpADUpacket, 0, 2);
+
+            //
+            orderArrayIndex++;
+            if(orderArrayIndex >= 8)
+            {
+                orderArrayIndex = 0;
+                //frameIndex++;
+            }
+
+            return tmpADUpacket;
+        }
+
+        static UInt16 caculateChecksum(byte[] data, int offset, int length)
+        {
+            UInt32 checkSum = 0;
+            int index = offset;
+            while (length > 1)
+            {
+                checkSum += ((UInt32)data[index] << 8) | ((UInt32)data[index + 1]); //little edian
+                length -= 2;
+                index += 2;
+            }
+            if (length == 1) // still have 1 byte
+            {
+                checkSum += ((UInt32)data[index] << 8);
+            }
+            while ((checkSum >> 16) > 0) //checkSum > 0xFFFF
+            {
+                checkSum = (checkSum & 0xFFFF) + (checkSum >> 16);
+            }
+            //inverse
+            checkSum = ~checkSum;
+            return (UInt16)checkSum;
+        }
     }
 
     class client_IPEndPoint
@@ -466,13 +534,14 @@ namespace UDP_send_packet_frame
         //de cho an toan, nen tinh checksum cho header nay
 
         //total byte in header
-        UInt16 length = 12;
+        UInt16 length = 14;
         byte volume = 0x00; // max:min 0x00:0xFE
         byte id_song;
         UInt16 totalLength;
         UInt32 id_frame;
         UInt16 numOffFrame;
         UInt16 checkSum;
+        UInt16 checkSumData;
 
         public UInt16 Length { get => length; }
 
@@ -494,7 +563,7 @@ namespace UDP_send_packet_frame
         }
 
         internal void copyHeaderToBuffer(byte[] _buffer)
-        {
+        {          
             _buffer[0] = volume;
             _buffer[1] = id_song;
             byte[] tmp_byte = new byte[4];
@@ -504,8 +573,38 @@ namespace UDP_send_packet_frame
             Buffer.BlockCopy(tmp_byte, 0, _buffer, 4, 4);
             tmp_byte = BitConverter.GetBytes(numOffFrame);
             Buffer.BlockCopy(tmp_byte, 0, _buffer, 8, 2);
+
+            //caculate checksum for header and checksum for data
+            checkSum = caculateChecksum(_buffer, 0, length - 4); //header
+            checkSumData = caculateChecksum(_buffer, length, totalLength - length);
+
             tmp_byte = BitConverter.GetBytes(checkSum);
             Buffer.BlockCopy(tmp_byte, 0, _buffer, 10, 2);
+            tmp_byte = BitConverter.GetBytes(checkSumData);
+            Buffer.BlockCopy(tmp_byte, 0, _buffer, 12, 2);
+        }
+
+        static UInt16 caculateChecksum(byte[] data, int offset, int length)
+        {
+            UInt32 checkSum = 0;
+            int index = offset;
+            while (length > 1)
+            {
+                checkSum += ((UInt32)data[index] << 8) | ((UInt32)data[index + 1]); //little edian
+                length -= 2;
+                index += 2;
+            }
+            if(length == 1) // still have 1 byte
+            {
+                checkSum += ((UInt32)data[index] << 8);
+            }
+            while((checkSum >> 16) > 0) //checkSum > 0xFFFF
+            {
+                checkSum = (checkSum & 0xFFFF) + (checkSum >> 16);
+            }
+            //inverse
+            checkSum = ~checkSum;
+            return (UInt16)checkSum;
         }
     }
 }
