@@ -390,8 +390,7 @@ namespace UDP_send_packet_frame
                         }
                     }
                     Console.WriteLine("Done");
-                    break;
-                }
+                    Thread.Sleep(50000);
             }
             //done a song
             timePlaying_song_s = 0;
