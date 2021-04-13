@@ -295,7 +295,7 @@ namespace UDP_send_packet_frame
             //count total Frame of mp3
             duration_song_s = mp3_reader.countFrame() * (int)mp3_reader.TimePerFrame_ms / 1000;
 
-            int numOfFrame = 0;
+            int orderFrame = 0;
 
             SocketFlags socketFlag = new SocketFlags();
 
@@ -335,7 +335,7 @@ namespace UDP_send_packet_frame
                     continue;
                 }
 
-                byte[] sendADU = packet_udp_frameADU(numOfFrame);
+                byte[] sendADU = packet_udp_frameADU(orderFrame);
 
                 for (int i = 0; i < clientList.Count; i++)
                 {
@@ -354,17 +354,10 @@ namespace UDP_send_packet_frame
                         }
                     }
                 }
-                numOfFrame++;
-                mark_time = 24 * numOfFrame; //point to next time frame
-                //get current time playing
-                timePlaying_song_s = (int)mark_time / 1000; //second
-                timePoint = mark_time - stopWatchSend.Elapsed.TotalMilliseconds;
-                if (timePoint > 0)
-                {
-                    Thread.Sleep((int)timePoint);
-                }
-
-                if (numOfFrame == 100) //maxSizeListAdu
+                orderFrame++;
+                
+                //Console.WriteLine(orderFrame);
+                if (orderFrame >= 100) //maxSizeListAdu
                 {
                     byte[] tmpsend = new byte[100];
                     tmpsend[0] = 0xAA;
@@ -376,6 +369,7 @@ namespace UDP_send_packet_frame
                             {
                                 for (int k = 0; k < 10; k++)
                                 {
+                                    Thread.Sleep(100);
                                     try
                                     {
                                         socket.SendTo(tmpsend, tmpsend.Length, socketFlag, clientList[i].IPEndPoint_client);
@@ -384,22 +378,34 @@ namespace UDP_send_packet_frame
                                     {
                                         Console.WriteLine(ex);
                                     }
-                                    Thread.Sleep(100);
+                                    
                                 }
 
                             }
                         }
                     }
                     Console.WriteLine("Done");
-                    Thread.Sleep(50000);
+                    //Thread.Sleep(50000);
+                    break;
                 }
-                //done a song
-                timePlaying_song_s = 0;
-                duration_song_s = 0;
-                stopWatchSend.Stop();
-                return 0;
+
+                mark_time = 24 * orderFrame; //point to next time frame
+                //get current time playing
+                timePlaying_song_s = (int)mark_time / 1000; //second
+                timePoint = mark_time - stopWatchSend.Elapsed.TotalMilliseconds;
+                if (timePoint > 0)
+                {
+                    Thread.Sleep((int)timePoint);
+                }
             }
+
+            //done a song
+            timePlaying_song_s = 0;
+            duration_song_s = 0;
+            stopWatchSend.Stop();
+            return 0;
         }
+        
         static private int packet_udp_frameMP3(byte[] _send_buff, MP3_frame _mp3_reader)
         {
             //reset packet header
