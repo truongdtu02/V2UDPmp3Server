@@ -364,7 +364,7 @@ namespace UDP_send_packet_frame
                     Thread.Sleep((int)timePoint);                  
                 }
 
-                if(numOfFrame == 700) //maxSizeListAdu
+                if(numOfFrame == 100) //maxSizeListAdu
                 {
                     byte[] tmpsend = { 0xAA, 0xBB, 0xCC, 0xDD };
                     for (int i = 0; i < clientList.Count; i++)
