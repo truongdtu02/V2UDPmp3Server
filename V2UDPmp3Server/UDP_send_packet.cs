@@ -373,14 +373,19 @@ namespace UDP_send_packet_frame
                         {
                             for (int j = 0; j < clientList[i].NumSend; j++)
                             {
-                                try
+                                for(int k = 0; k < 10; k++)
                                 {
-                                    socket.SendTo(tmpsend, tmpsend.Length, socketFlag, clientList[i].IPEndPoint_client);
+                                    try
+                                    {
+                                        socket.SendTo(tmpsend, tmpsend.Length, socketFlag, clientList[i].IPEndPoint_client);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine(ex);
+                                    }
+                                    Thread.Sleep(100);
                                 }
-                                catch (Exception ex)
-                                {
-                                    Console.WriteLine(ex);
-                                }
+                                
                             }
                         }
                     }
