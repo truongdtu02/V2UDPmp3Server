@@ -41,7 +41,7 @@ namespace V2UDPmp3Server
 
             List<soundTrack> soundListServer = new List<soundTrack>()
             {
-                new soundTrack(){ FilePath = "bai11.mp3"},
+                new soundTrack(){ FilePath = "bai111.mp3"},
                 new soundTrack(){ FilePath = "bai124k.mp3"}
                 //new soundTrack(){ FilePath = "LoveIsBlue.mp3"}
             };
