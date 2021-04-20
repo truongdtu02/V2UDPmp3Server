@@ -49,8 +49,20 @@ namespace V2UDPmp3Server
 
             UDPsocket udpSocket = new UDPsocket();
             //var _status = udpSocket.Status; //get status (PLAY, PAUSE, STOP)
-
-            string filePath = "bai111.mp3";
+            string filePath;
+            string filePath1 = @"E:/bai111.mp3";
+            string filePath2 = "bai111.mp3";
+            Console.Write("Server  1: Local, 2: online: ");
+            char ch = Console.ReadKey().KeyChar;
+            if(ch == '1')
+            {
+                filePath = filePath1;
+            }
+            else
+            {
+                filePath = filePath2;
+                soundList = soundListServer;
+            }
             byte[] mp3_buff = File.ReadAllBytes(filePath).Skip(237).ToArray();
             //MP3_ADU mp3file = new MP3_ADU(mp3_buff, mp3_buff.Length);
             //int numFrame = 0;
@@ -80,7 +92,7 @@ namespace V2UDPmp3Server
 
             //launch
             //udpSocket.launchUDPsocket(soundList, clientList);
-            udpSocket.launchUDPsocket(soundListServer, clientList, aduFrameList);
+            udpSocket.launchUDPsocket(soundList, clientList, aduFrameList);
             //create UDP socket listen from client
             udpSocket.UDPsocketListen();
             //create UDP socket for sending mp3 frame to client

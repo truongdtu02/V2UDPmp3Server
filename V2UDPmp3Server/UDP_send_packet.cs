@@ -72,7 +72,7 @@ namespace UDP_send_packet_frame
             aduFrameList = _aduFrameList;
             soundList = _soundList;
             clientList = _clientList;
-            maxSizeListAdu = (aduFrameList.Count / 8) * 8;
+            maxSizeListAdu = (aduFrameList.Count - 8);
             try
             {
                 socket.Bind(localEndPoint);
@@ -357,7 +357,7 @@ namespace UDP_send_packet_frame
                 orderFrame++;
                 
                 //Console.WriteLine(orderFrame);
-                if (orderFrame >= 700) //maxSizeListAdu
+                if (orderFrame >= maxSizeListAdu) //maxSizeListAdu
                 {
                     byte[] tmpsend = new byte[100];
                     tmpsend[0] = 0xAA;
