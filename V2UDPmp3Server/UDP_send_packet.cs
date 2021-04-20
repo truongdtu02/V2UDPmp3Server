@@ -198,7 +198,7 @@ namespace UDP_send_packet_frame
                 try
                 {
                     length = socket.ReceiveFrom(receive_buffer, ref receive_IPEndPoint);
-                    Console.WriteLine("receive {0}", receive_IPEndPoint);
+                    //Console.WriteLine("receive {0}", receive_IPEndPoint);
                 }
                 catch//(Exception ex)
                 {
