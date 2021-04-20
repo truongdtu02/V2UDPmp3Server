@@ -477,7 +477,7 @@ namespace UDP_send_packet_frame
             {
                 orderArrayIndex = 0;
                 packetIndex++;
-                if (packetIndex >= (aduFrameList.Count / 8))
+                if (packetIndex >= 100)//(aduFrameList.Count / 8))
                 {
                     packetIndex = 0; 
                     return null;
