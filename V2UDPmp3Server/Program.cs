@@ -36,14 +36,13 @@ namespace V2UDPmp3Server
             List<soundTrack> soundList = new List<soundTrack>()
             {
                 new soundTrack(){ FilePath = @"E:\bai111.mp3"},
-                new soundTrack(){ FilePath = @"E:\bai111.mp3"},
-                new soundTrack(){ FilePath = @"E:\bai111.mp3"}
+                new soundTrack(){ FilePath = @"E:\bai124k.mp3"}
             };
 
             List<soundTrack> soundListServer = new List<soundTrack>()
             {
-                new soundTrack(){ FilePath = "duaComChoMeEmDiCay.mp3"},
-                new soundTrack(){ FilePath = "emYeuTruongEm.mp3"}
+                new soundTrack(){ FilePath = "bai11.mp3"},
+                new soundTrack(){ FilePath = "bai124k.mp3"}
                 //new soundTrack(){ FilePath = "LoveIsBlue.mp3"}
             };
 
@@ -63,36 +62,36 @@ namespace V2UDPmp3Server
                 filePath = filePath2;
                 soundList = soundListServer;
             }
-            byte[] mp3_buff = File.ReadAllBytes(filePath).Skip(237).ToArray();
-            //MP3_ADU mp3file = new MP3_ADU(mp3_buff, mp3_buff.Length);
-            //int numFrame = 0;
+            //byte[] mp3_buff = File.ReadAllBytes(filePath).Skip(237).ToArray();
+            ////MP3_ADU mp3file = new MP3_ADU(mp3_buff, mp3_buff.Length);
+            ////int numFrame = 0;
 
-            ADU_frame adufile = new ADU_frame(mp3_buff, mp3_buff.Length);
-            int aduNumFrame = 0;
+            //ADU_frame adufile = new ADU_frame(mp3_buff, mp3_buff.Length);
+            //int aduNumFrame = 0;
 
-            //FileStream stream = new FileStream(@"E:\test10.mp3", FileMode.Append);
+            ////FileStream stream = new FileStream(@"E:\test10.mp3", FileMode.Append);
 
-            List<byte[]> aduFrameList = new List<byte[]>();
-            while (true)
-            {
-                byte[] aduframe = adufile.ReadNextADUFrame();
-                if (aduframe != null)
-                {
-                    aduNumFrame++;
-                    //AppendAllBytes(@"E:\adu.mp3", aduframe);
-                    //stream.Write(aduframe, 0, aduframe.Length);
-                    aduFrameList.Add(aduframe);
-                }
-                else
-                {
-                    break;
-                }
-            }
+            //List<byte[]> aduFrameList = new List<byte[]>();
+            //while (true)
+            //{
+            //    byte[] aduframe = adufile.ReadNextADUFrame();
+            //    if (aduframe != null)
+            //    {
+            //        aduNumFrame++;
+            //        //AppendAllBytes(@"E:\adu.mp3", aduframe);
+            //        //stream.Write(aduframe, 0, aduframe.Length);
+            //        aduFrameList.Add(aduframe);
+            //    }
+            //    else
+            //    {
+            //        break;
+            //    }
+            //}
             //stream.Close();
 
             //launch
             //udpSocket.launchUDPsocket(soundList, clientList);
-            udpSocket.launchUDPsocket(soundList, clientList, aduFrameList);
+            udpSocket.launchUDPsocket(soundList, clientList);
             //create UDP socket listen from client
             udpSocket.UDPsocketListen();
             //create UDP socket for sending mp3 frame to client

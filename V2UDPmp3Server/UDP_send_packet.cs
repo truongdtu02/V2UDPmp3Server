@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Linq;
 using System.IO;
+using MP3_ADU_namespace;
 
 namespace UDP_send_packet_frame
 {
@@ -67,9 +68,8 @@ namespace UDP_send_packet_frame
         static List<byte[]> aduFrameList = new List<byte[]>();
         static int maxSizeListAdu;
 
-        public bool launchUDPsocket(List<soundTrack> _soundList, List<client_IPEndPoint> _clientList, List<byte[]> _aduFrameList)
+        public bool launchUDPsocket(List<soundTrack> _soundList, List<client_IPEndPoint> _clientList)
         {
-            aduFrameList = _aduFrameList;
             soundList = _soundList;
             clientList = _clientList;
             maxSizeListAdu = (aduFrameList.Count - 8);
@@ -235,10 +235,37 @@ namespace UDP_send_packet_frame
                     HeaderPacket.IDsong = (byte)(i + 1);
                     HeaderPacket.IDframe = 0;
                     int value_control = 0;
-                    byte[] mp3_buff;
+                    byte[] mp3_data;
                     try
                     {
-                        mp3_buff = File.ReadAllBytes(soundList[i].FilePath);
+                        mp3_data = File.ReadAllBytes(soundList[i].FilePath);
+
+                        byte[] mp3_buff = File.ReadAllBytes(soundList[i].FilePath).Skip(237).ToArray();
+                        //MP3_ADU mp3file = new MP3_ADU(mp3_buff, mp3_buff.Length);
+                        //int numFrame = 0;
+
+                        ADU_frame adufile = new ADU_frame(mp3_buff, mp3_buff.Length);
+                        int aduNumFrame = 0;
+
+                        //FileStream stream = new FileStream(@"E:\test10.mp3", FileMode.Append);
+
+                        List<byte[]> _aduFrameList = new List<byte[]>();
+                        while (true)
+                        {
+                            byte[] aduframe = adufile.ReadNextADUFrame();
+                            if (aduframe != null)
+                            {
+                                aduNumFrame++;
+                                _aduFrameList.Add(aduframe);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+
+                        aduFrameList = _aduFrameList;
+
                     }
 
                     catch (Exception ex)
@@ -247,7 +274,7 @@ namespace UDP_send_packet_frame
                         continue;
                     }
                     songID = i;
-                    value_control = sendPacketMP3(mp3_buff, mp3_buff.Length);
+                    value_control = sendPacketMP3(mp3_data, mp3_data.Length);
 
                     if (value_control == 3) //next
                     {
@@ -304,17 +331,23 @@ namespace UDP_send_packet_frame
             Stopwatch stopWatchSend = new Stopwatch();
             stopWatchSend.Start();
 
+            int tmp;
             while (true)
             {
+
+                byte[] sendADU = packet_udp_frameADU(orderFrame);
+                bool endOfFile = false;
+
                 //change status, return value to threadSendFunc
                 //value: 1-play-next, 2-play-previous, 3-stop
+                tmp = resumeNextPrevious;
                 if (status == status_enum.STOP)
                 {
-                    return 5;
+                    tmp = 5;
+                    sendADU = null;
                 }
                 else if (resumeNextPrevious > 0)
                 {
-                    int tmp = resumeNextPrevious;
                     resumeNextPrevious = 0;
                     if (tmp == 2)
                     {
@@ -322,22 +355,23 @@ namespace UDP_send_packet_frame
                     }
                     else if (tmp > 4)
                     {
-                        return 5;
+                        tmp = 5;
                     }
-                    else
-                    {
-                        return tmp;
-                    }
+                    sendADU = null;
                 }
                 else if (status == status_enum.PAUSE)
                 {
                     stopWatchSend.Stop();
                     Thread.Sleep(500);
-                    continue;
+                    sendADU = null;
                 }
 
-                byte[] sendADU = packet_udp_frameADU(orderFrame);
-
+                if(sendADU == null)
+                {
+                    sendADU = new byte[10];
+                    sendADU[0] = 0xAA;
+                    endOfFile = true;
+                }
                 for (int i = 0; i < clientList.Count; i++)
                 {
                     if ((!clientList[i].TimeOut) && (clientList[i].On))
@@ -355,41 +389,10 @@ namespace UDP_send_packet_frame
                         }
                     }
                 }
+                if (endOfFile) break;
                 orderFrame++;
                 
                 //Console.WriteLine(orderFrame);
-                if (orderFrame >= maxSizeListAdu) //maxSizeListAdu
-                {
-                    byte[] tmpsend = new byte[100];
-                    tmpsend[0] = 0xAA;
-                    for (int i = 0; i < clientList.Count; i++)
-                    {
-                        if ((!clientList[i].TimeOut) && (clientList[i].On))
-                        {
-                            for (int j = 0; j < clientList[i].NumSend; j++)
-                            {
-                                for (int k = 0; k < 10; k++)
-                                {
-                                    Thread.Sleep(100);
-                                    try
-                                    {
-                                        socket.SendTo(tmpsend, tmpsend.Length, socketFlag, clientList[i].IPEndPoint_client);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Console.WriteLine(ex);
-                                    }
-                                    
-                                }
-
-                            }
-                        }
-                    }
-                    //Console.WriteLine("Done");
-                    //Thread.Sleep(50000);
-                    break;
-                }
-
                 mark_time = 24 * orderFrame; //point to next time frame
                 //get current time playing
                 timePlaying_song_s = (int)mark_time / 1000; //second
@@ -404,7 +407,8 @@ namespace UDP_send_packet_frame
             timePlaying_song_s = 0;
             duration_song_s = 0;
             stopWatchSend.Stop();
-            return 0;
+            Thread.Sleep(500);
+            return tmp;
         }
         
         static private int packet_udp_frameMP3(byte[] _send_buff, MP3_frame _mp3_reader)
@@ -452,7 +456,7 @@ namespace UDP_send_packet_frame
         }
         static int[] orderArray = { 0, 2, 4, 6, 1, 3, 5, 7 };
         static int orderArrayIndex = 0;
-        static int frameIndex = 0;
+        static int packetIndex = 0;
         static private byte[] packet_udp_frameADU(int _numOfFrame)
         {
             int iListADU = (_numOfFrame / 8) * 8 + orderArray[orderArrayIndex];
@@ -472,7 +476,12 @@ namespace UDP_send_packet_frame
             if (orderArrayIndex >= 8)
             {
                 orderArrayIndex = 0;
-                //frameIndex++;
+                packetIndex++;
+                if (packetIndex >= (aduFrameList.Count / 8))
+                {
+                    packetIndex = 0; 
+                    return null;
+                }
             }
 
             return tmpADUpacket;
