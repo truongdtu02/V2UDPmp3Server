@@ -336,11 +336,11 @@ namespace UDP_send_packet_frame
             while (true)
             {
 
-                //byte[] sendADU = packet_udp_frameADU(orderFrame);
+                byte[] sendADU = packet_udp_frameADU(orderFrame);
                 bool endOfFile = false;
-                byte[] sendADU = new byte[200];
-                sendADU[0] = (byte)'h';
-                sendADU[1] = (byte)'i';
+                //byte[] sendADU = new byte[200];
+                //sendADU[0] = (byte)'h';
+                //sendADU[1] = (byte)'i';
 
                 //change status, return value to threadSendFunc
                 //value: 1-play-next, 2-play-previous, 3-stop
