@@ -41,9 +41,9 @@ namespace V2UDPmp3Server
 
             List<soundTrack> soundListServer = new List<soundTrack>()
             {
-                new soundTrack(){ FilePath = "bai48k.mp3"},
-                new soundTrack(){ FilePath = "bai24k.mp3"},
-                new soundTrack(){ FilePath = "bai16k.mp3"},
+                //new soundTrack(){ FilePath = "bai48k.mp3"},
+                //new soundTrack(){ FilePath = "bai24k.mp3"},
+                //new soundTrack(){ FilePath = "bai16k.mp3"},
                 new soundTrack(){ FilePath = "bai8k.mp3"}
                 //new soundTrack(){ FilePath = "LoveIsBlue.mp3"}
             };
@@ -97,8 +97,8 @@ namespace V2UDPmp3Server
             //create UDP socket listen from client
             udpSocket.UDPsocketListen();
             //create UDP socket for sending mp3 frame to client
-            //udpSocket.UDPsocketSend();
-            //control(udpSocket);
+            udpSocket.UDPsocketSend();
+            control(udpSocket);
         }
 
         static void control(UDPsocket udpSocket)
