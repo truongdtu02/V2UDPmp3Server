@@ -31,7 +31,7 @@ namespace UDP_send_packet_frame
         Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
         //for threadListen
-        byte[] receive_buffer = new byte[8];
+        byte[] receive_buffer = new byte[30];
         // biến này về sau sẽ chứa địa chỉ của tiến trình client nào gửi gói tin tới
         EndPoint receive_IPEndPoint = new IPEndPoint(IPAddress.Any, 0);
         //List save client request
