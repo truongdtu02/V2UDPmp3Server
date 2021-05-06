@@ -53,13 +53,17 @@ namespace V2UDPmp3Server
             control(udpSocket);
 
 
-            using var process = Process.Start(
-                new ProcessStartInfo
-                {
-                    FileName = "nethogs",
-                    ArgumentList = { "-a" }
-                });
-            process.WaitForExit();
+            //using var process = Process.Start(
+            //    new ProcessStartInfo
+            //    {
+            //        FileName = "nethogs",
+            //        ArgumentList = { "-a" }
+            //    });
+            //process.WaitForExit();
+
+            ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "nethogs", Arguments = "-a", };
+            Process proc = new Process() { StartInfo = startInfo, };
+            proc.Start();
         }
 
         static void control(UDPsocket udpSocket)
