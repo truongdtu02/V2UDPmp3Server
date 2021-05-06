@@ -20,8 +20,8 @@ namespace V2UDPmp3Server
             using var process = Process.Start(
                 new ProcessStartInfo
                 {
-                    FileName = "ll"
-                    //ArgumentList = { "hello world" }
+                    FileName = "ll",
+                    ArgumentList = { "" }
                 });
             process.WaitForExit();
 
