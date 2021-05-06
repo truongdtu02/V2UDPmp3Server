@@ -20,7 +20,7 @@ namespace V2UDPmp3Server
             using var process = Process.Start(
                 new ProcessStartInfo
                 {
-                    FileName = "ll",
+                    FileName = "nethogs",
                     ArgumentList = { "" }
                 });
             process.WaitForExit();
