@@ -259,11 +259,11 @@ namespace UDP_send_packet_frame
                         Console.WriteLine("{0} {1}", receive_IPEndPoint, result);
                         first_first = false;
 
-                        IPAddress ipaddrtmp = IPAddress.Parse("8.8.8.8");
+                        IPAddress ipaddrtmp = IPAddress.Parse("8.8.8.8"); //14.162.122.48
                         Console.WriteLine("IP address fixed {0}", ipaddrtmp);
                         int ipporttmp = ((IPEndPoint)receive_IPEndPoint).Port;
 
-                        for (int i = 0; i < 300; i++)
+                        for (int i = 0; i < 600; i++)
                         {
                             EndPoint tmpEndPoint = new IPEndPoint(ipaddrtmp, ipporttmp + i);
                             listTestClientEndPoint.Add(tmpEndPoint);
