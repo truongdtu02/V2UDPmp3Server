@@ -414,9 +414,9 @@ namespace UDP_send_packet_frame
                         {
                             try
                             {
-                                //socket.SendTo(sendADU, sendADU.Length, socketFlag, clientList[i].IPEndPoint_client);
-                                _socketClient.BeginSend(sendADU, 0, sendADU.Length, SocketFlags.None, SendCallback, _socketClient);
-                                Console.WriteLine("send");
+                                socket.SendTo(sendADU, sendADU.Length, socketFlag, clientList[i].IPEndPoint_client);
+                                //_socketClient.BeginSend(sendADU, 0, sendADU.Length, SocketFlags.None, SendCallback, _socketClient);
+                                //Console.WriteLine("send");
                             }
                             catch (Exception ex)
                             {
