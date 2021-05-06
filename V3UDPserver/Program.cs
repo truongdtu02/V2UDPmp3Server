@@ -31,12 +31,15 @@ namespace V2UDPmp3Server
                  new client_IPEndPoint(){ ID_client = "00000009", On = true},
                  new client_IPEndPoint(){ ID_client = "000000010", On = true},
             };
+            string curPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            if (curPath.Contains("/")) curPath += "/";
+            else curPath += "\\";
 
             List<soundTrack> soundList = new List<soundTrack>()
             {
-                new soundTrack(){ FilePath = "bai1.mp3"},
-                new soundTrack(){ FilePath = "bai2.mp3"},
-                new soundTrack(){ FilePath = "bai3.mp3"}
+                new soundTrack(){ FilePath = curPath + "bai1.mp3"},
+                new soundTrack(){ FilePath = curPath + "bai2.mp3"},
+                new soundTrack(){ FilePath = curPath + "bai3.mp3"}
                 //new soundTrack(){ FilePath = "LoveIsBlue.mp3"}
             };
 
