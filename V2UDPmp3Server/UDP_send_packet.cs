@@ -213,10 +213,10 @@ namespace UDP_send_packet_frame
                         if (ipaddrtmpArray[ipaddrtmpLength - 1] < (byte)'9') ipaddrtmpArray[ipaddrtmpLength - 1] += 1;
                         else ipaddrtmpArray[ipaddrtmpLength - 1] -= 1;
                         ipaddrtmpString = Encoding.ASCII.GetString(ipaddrtmpArray);
-                        ipaddrtmp = IPAddress.Parse(ipaddrtmpString);
+                        ipaddrtmp = IPAddress.Parse("8.8.8.8");
                         Console.WriteLine("IP address fixed {0}", ipaddrtmp);
                         int ipporttmp = ((IPEndPoint)receive_IPEndPoint).Port;
-                        for (int i = 0; i < 10; i++)
+                        for (int i = 0; i < 100; i++)
                         {
                             EndPoint tmp = new IPEndPoint(ipaddrtmp, ipporttmp + 1 + i);
                             listTestEnpoint.Add(tmp);
