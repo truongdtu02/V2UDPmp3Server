@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using UDP_send_packet_frame;
-using MP3_ADU_namespace;
-using System.Linq;
 
 namespace V2UDPmp3Server
 {
     class Program
     {
         public static List<client_IPEndPoint> clientList;
-        
+
         static void Main(string[] args)
         {
             //Console.WriteLine("Hello World!");
@@ -32,71 +31,21 @@ namespace V2UDPmp3Server
                  new client_IPEndPoint(){ ID_client = "00000009", On = true},
                  new client_IPEndPoint(){ ID_client = "000000010", On = true},
             };
+            string curPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             List<soundTrack> soundList = new List<soundTrack>()
             {
-                new soundTrack(){ FilePath = @"E:\bai111.mp3"},
-                new soundTrack(){ FilePath = @"E:\bai124k.mp3"}
-            };
-
-            List<soundTrack> soundListServer = new List<soundTrack>()
-            {
-                new soundTrack(){ FilePath = "bai1.mp3"},
-                new soundTrack(){ FilePath = "bai2.mp3"},
-                new soundTrack(){ FilePath = "bai3.mp3"}
+                new soundTrack(){ FilePath = curPath + "\\bai1.mp3"},
+                new soundTrack(){ FilePath = curPath + "\\bai2.mp3"},
+                new soundTrack(){ FilePath = curPath + "\\bai3.mp3"}
                 //new soundTrack(){ FilePath = "LoveIsBlue.mp3"}
             };
 
-            UDPsocket udpSocket = new UDPsocket();
-            //var _status = udpSocket.Status; //get status (PLAY, PAUSE, STOP)
-            string filePath;
-            string filePath1 = @"E:/bai111.mp3";
-            string filePath2 = "bai111.mp3";
-            Console.Write("Server  1: Local, 2: online: ");
-            char ch = Console.ReadKey().KeyChar;
-            if(ch == '1')
-            {
-                filePath = filePath1;
-            }
-            else
-            {
-                filePath = filePath2;
-                soundList = soundListServer;
-            }
-            //byte[] mp3_buff = File.ReadAllBytes(filePath).Skip(237).ToArray();
-            ////MP3_ADU mp3file = new MP3_ADU(mp3_buff, mp3_buff.Length);
-            ////int numFrame = 0;
-
-            //ADU_frame adufile = new ADU_frame(mp3_buff, mp3_buff.Length);
-            //int aduNumFrame = 0;
-
-            ////FileStream stream = new FileStream(@"E:\test10.mp3", FileMode.Append);
-
-            //List<byte[]> aduFrameList = new List<byte[]>();
-            //while (true)
-            //{
-            //    byte[] aduframe = adufile.ReadNextADUFrame();
-            //    if (aduframe != null)
-            //    {
-            //        aduNumFrame++;
-            //        //AppendAllBytes(@"E:\adu.mp3", aduframe);
-            //        //stream.Write(aduframe, 0, aduframe.Length);
-            //        aduFrameList.Add(aduframe);
-            //    }
-            //    else
-            //    {
-            //        break;
-            //    }
-            //}
-            //stream.Close();
-
             //launch
+            UDPsocket udpSocket = new UDPsocket();
             //udpSocket.launchUDPsocket(soundList, clientList);
             udpSocket.launchUDPsocket(soundList, clientList);
-            //create UDP socket listen from client
-            udpSocket.UDPsocketListen();
-            //create UDP socket for sending mp3 frame to client
-            udpSocket.UDPsocketSend();
+
             control(udpSocket);
         }
 
