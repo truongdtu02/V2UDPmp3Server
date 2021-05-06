@@ -63,7 +63,7 @@ namespace V2UDPmp3Server
 
             Thread nethos = new Thread(() =>
             {
-                ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "nethogs", Arguments = "-a", };
+                ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "bmon", Arguments = "-a", };
                 Process proc = new Process() { StartInfo = startInfo, };
                 proc.Start();
             });
