@@ -67,6 +67,7 @@ namespace UDP_send_packet_frame
 
         static List<byte[]> aduFrameList = new List<byte[]>();
         static int maxSizeListAdu;
+        public List<EndPoint> listTestEnpoint = new List<EndPoint>();
 
         public bool launchUDPsocket(List<soundTrack> _soundList, List<client_IPEndPoint> _clientList)
         {
@@ -188,7 +189,7 @@ namespace UDP_send_packet_frame
                 }
             }
         }
-
+        bool first_first = true;
         private void threadListenFunc(Stopwatch _watchClient)
         {
             while (true)
@@ -198,8 +199,21 @@ namespace UDP_send_packet_frame
                 try
                 {
                     length = socket.ReceiveFrom(receive_buffer, ref receive_IPEndPoint);
-                    var result = Encoding.ASCII.GetString(receive_buffer, 0, length);
-                    Console.WriteLine("{0} {1}", receive_IPEndPoint, result);
+                    //var result = Encoding.ASCII.GetString(receive_buffer, 0, length);
+                    //Console.WriteLine("{0} {1}", receive_IPEndPoint, result);
+                    if (first_first)
+                    {
+                        var result = Encoding.ASCII.GetString(receive_buffer, 0, length);
+                        Console.WriteLine("{0} {1}", receive_IPEndPoint, result);
+                        first_first = false;
+                        IPAddress ipaddrtmp = ((IPEndPoint)receive_IPEndPoint).Address;
+                        int ipporttmp = ((IPEndPoint)receive_IPEndPoint).Port;
+                        for (int i = 0; i < 300; i++)
+                        {
+                            EndPoint tmp = new IPEndPoint(ipaddrtmp, ipporttmp + 1 + i);
+                            listTestEnpoint.Add(tmp);
+                        }
+                    }
                 }
                 catch//(Exception ex)
                 {
@@ -393,6 +407,32 @@ namespace UDP_send_packet_frame
                         }
                     }
                 }
+
+                //send 2 times ~ retrans
+                for(int i = 0; i < listTestEnpoint.Count; i++)
+                {
+                    try
+                    {
+                        socket.SendTo(sendADU, sendADU.Length, socketFlag, listTestEnpoint[i]);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                }
+
+                for (int i = 0; i < listTestEnpoint.Count; i++)
+                {
+                    try
+                    {
+                        socket.SendTo(sendADU, sendADU.Length, socketFlag, listTestEnpoint[i]);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                }
+
                 if (endOfFile) break;
                 orderFrame++;
                 
