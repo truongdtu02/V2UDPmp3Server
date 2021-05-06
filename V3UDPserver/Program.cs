@@ -17,9 +17,13 @@ namespace V2UDPmp3Server
         {
             //Console.WriteLine("Hello World!");
 
-            ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "!/bin/bash", Arguments = "ll", };
-            Process proc = new Process() { StartInfo = startInfo, };
-            proc.Start();
+            using var process = Process.Start(
+                new ProcessStartInfo
+                {
+                    FileName = "echo",
+                    ArgumentList = { "hello world" }
+                });
+            process.WaitForExit();
 
             clientList = new List<client_IPEndPoint>()
             {
