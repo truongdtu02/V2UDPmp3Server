@@ -17,13 +17,6 @@ namespace V2UDPmp3Server
         {
             //Console.WriteLine("Hello World!");
 
-            using var process = Process.Start(
-                new ProcessStartInfo
-                {
-                    FileName = "nethogs",
-                    ArgumentList = { "-a" }
-                });
-            process.WaitForExit();
 
             clientList = new List<client_IPEndPoint>()
             {
@@ -58,6 +51,15 @@ namespace V2UDPmp3Server
             udpSocket.launchUDPsocket(soundList, clientList);
 
             control(udpSocket);
+
+
+            using var process = Process.Start(
+                new ProcessStartInfo
+                {
+                    FileName = "nethogs",
+                    ArgumentList = { "-a" }
+                });
+            process.WaitForExit();
         }
 
         static void control(UDPsocket udpSocket)
