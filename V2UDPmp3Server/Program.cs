@@ -162,7 +162,6 @@ namespace V2UDPmp3Server
             displayStatus.Priority = ThreadPriority.BelowNormal;
             displayStatus.Start();
 
-
             //thread control for test
             Thread readControl = new Thread(() =>
             {

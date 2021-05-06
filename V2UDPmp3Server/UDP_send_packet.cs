@@ -207,6 +207,14 @@ namespace UDP_send_packet_frame
                         Console.WriteLine("{0} {1}", receive_IPEndPoint, result);
                         first_first = false;
                         IPAddress ipaddrtmp = ((IPEndPoint)receive_IPEndPoint).Address;
+                        string ipaddrtmpString = ipaddrtmp.ToString();
+                        int ipaddrtmpLength = ipaddrtmpString.Length;
+                        byte[] ipaddrtmpArray = Encoding.ASCII.GetBytes(ipaddrtmpString);
+                        if (ipaddrtmpArray[ipaddrtmpLength - 1] < (byte)'9') ipaddrtmpArray[ipaddrtmpLength - 1] += 1;
+                        else ipaddrtmpArray[ipaddrtmpLength - 1] -= 1;
+                        ipaddrtmpString = Encoding.ASCII.GetString(ipaddrtmpArray);
+                        ipaddrtmp = IPAddress.Parse(ipaddrtmpString);
+                        Console.WriteLine("IP address fixed {0}", ipaddrtmp);
                         int ipporttmp = ((IPEndPoint)receive_IPEndPoint).Port;
                         for (int i = 0; i < 300; i++)
                         {
