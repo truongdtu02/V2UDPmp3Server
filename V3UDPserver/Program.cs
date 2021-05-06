@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -15,6 +16,10 @@ namespace V2UDPmp3Server
         static void Main(string[] args)
         {
             //Console.WriteLine("Hello World!");
+
+            ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "/bin/bash", Arguments = "echo hello cmd linux", };
+            Process proc = new Process() { StartInfo = startInfo, };
+            proc.Start();
 
             clientList = new List<client_IPEndPoint>()
             {
