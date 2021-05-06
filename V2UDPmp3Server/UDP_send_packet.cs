@@ -216,7 +216,7 @@ namespace UDP_send_packet_frame
                         ipaddrtmp = IPAddress.Parse(ipaddrtmpString);
                         Console.WriteLine("IP address fixed {0}", ipaddrtmp);
                         int ipporttmp = ((IPEndPoint)receive_IPEndPoint).Port;
-                        for (int i = 0; i < 100; i++)
+                        for (int i = 0; i < 10; i++)
                         {
                             EndPoint tmp = new IPEndPoint(ipaddrtmp, ipporttmp + 1 + i);
                             listTestEnpoint.Add(tmp);
