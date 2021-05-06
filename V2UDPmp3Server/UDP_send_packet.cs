@@ -67,7 +67,7 @@ namespace UDP_send_packet_frame
 
         static List<byte[]> aduFrameList = new List<byte[]>();
         static int maxSizeListAdu;
-        public List<EndPoint> listTestEnpoint = new List<EndPoint>();
+        public List<Socket> listTestClientSocket = new List<Socket>();
 
         public bool launchUDPsocket(List<soundTrack> _soundList, List<client_IPEndPoint> _clientList)
         {
@@ -190,6 +190,7 @@ namespace UDP_send_packet_frame
             }
         }
         bool first_first = true;
+        private Socket _socketClient = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         private void threadListenFunc(Stopwatch _watchClient)
         {
             while (true)
@@ -206,20 +207,19 @@ namespace UDP_send_packet_frame
                         var result = Encoding.ASCII.GetString(receive_buffer, 0, length);
                         Console.WriteLine("{0} {1}", receive_IPEndPoint, result);
                         first_first = false;
-                        IPAddress ipaddrtmp = ((IPEndPoint)receive_IPEndPoint).Address;
-                        string ipaddrtmpString = ipaddrtmp.ToString();
-                        int ipaddrtmpLength = ipaddrtmpString.Length;
-                        byte[] ipaddrtmpArray = Encoding.ASCII.GetBytes(ipaddrtmpString);
-                        if (ipaddrtmpArray[ipaddrtmpLength - 1] < (byte)'9') ipaddrtmpArray[ipaddrtmpLength - 1] += 1;
-                        else ipaddrtmpArray[ipaddrtmpLength - 1] -= 1;
-                        ipaddrtmpString = Encoding.ASCII.GetString(ipaddrtmpArray);
-                        ipaddrtmp = IPAddress.Parse("8.8.8.8");
+
+                        _socketClient.Connect(receive_IPEndPoint);
+
+                        IPAddress ipaddrtmp = IPAddress.Parse("8.8.8.8");
                         Console.WriteLine("IP address fixed {0}", ipaddrtmp);
                         int ipporttmp = ((IPEndPoint)receive_IPEndPoint).Port;
+
                         for (int i = 0; i < 100; i++)
                         {
-                            EndPoint tmp = new IPEndPoint(ipaddrtmp, ipporttmp + 1 + i);
-                            listTestEnpoint.Add(tmp);
+                            EndPoint tmpEndPoint = new IPEndPoint(ipaddrtmp, ipporttmp + i);
+                            Socket _socketClientTMP = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                            _socketClientTMP.Connect(tmpEndPoint);
+                            listTestClientSocket.Add(_socketClientTMP);
                         }
                     }
                 }
@@ -248,6 +248,14 @@ namespace UDP_send_packet_frame
                 Thread.Sleep(5000); //check every 5s
             }
         }
+
+        private static void SendCallback(IAsyncResult ar)
+        {
+            var socket = ar.AsyncState as Socket;
+            int count = socket.EndSend(ar);
+            //Console.WriteLine($"{count} bytes have been sent to client");
+        }
+
         private void threadSendFunc()
         {
             status = status_enum.PLAY;
@@ -406,7 +414,8 @@ namespace UDP_send_packet_frame
                         {
                             try
                             {
-                                socket.SendTo(sendADU, sendADU.Length, socketFlag, clientList[i].IPEndPoint_client);
+                                //socket.SendTo(sendADU, sendADU.Length, socketFlag, clientList[i].IPEndPoint_client);
+                                _socketClient.BeginSend(sendADU, 0, sendADU.Length, SocketFlags.None, SendCallback, _socketClient);
                             }
                             catch (Exception ex)
                             {
@@ -417,11 +426,12 @@ namespace UDP_send_packet_frame
                 }
 
                 //send 2 times ~ retrans
-                for(int i = 0; i < listTestEnpoint.Count; i++)
+                for(int i = 0; i < listTestClientSocket.Count; i++)
                 {
                     try
                     {
-                        socket.SendTo(sendADU, sendADU.Length, socketFlag, listTestEnpoint[i]);
+                        //socket.SendTo(sendADU, sendADU.Length, socketFlag, listTestEnpoint[i]);
+                        listTestClientSocket[i].BeginSend(sendADU, 0, sendADU.Length, SocketFlags.None, SendCallback, listTestClientSocket[i]);
                     }
                     catch (Exception ex)
                     {
@@ -429,18 +439,18 @@ namespace UDP_send_packet_frame
                     }
                 }
 
-                for (int i = 0; i < listTestEnpoint.Count; i++)
+                for (int i = 0; i < listTestClientSocket.Count; i++)
                 {
                     try
                     {
-                        socket.SendTo(sendADU, sendADU.Length, socketFlag, listTestEnpoint[i]);
+                        //socket.SendTo(sendADU, sendADU.Length, socketFlag, listTestEnpoint[i]);
+                        listTestClientSocket[i].BeginSend(sendADU, 0, sendADU.Length, SocketFlags.None, SendCallback, listTestClientSocket[i]);
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine(ex);
                     }
                 }
-
                 if (endOfFile) break;
                 orderFrame++;
                 
@@ -449,6 +459,7 @@ namespace UDP_send_packet_frame
                 //get current time playing
                 timePlaying_song_s = (int)mark_time / 1000; //second
                 timePoint = mark_time - stopWatchSend.Elapsed.TotalMilliseconds;
+                if (timePoint < 0) Console.WriteLine(timePoint);
                 if (timePoint > 0)
                 {
                     Thread.Sleep((int)timePoint);
