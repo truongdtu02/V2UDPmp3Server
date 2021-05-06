@@ -50,7 +50,7 @@ namespace V2UDPmp3Server
             //udpSocket.launchUDPsocket(soundList, clientList);
             udpSocket.launchUDPsocket(soundList, clientList);
 
-            control(udpSocket);
+            //control(udpSocket);
 
 
             //using var process = Process.Start(
