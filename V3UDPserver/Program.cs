@@ -21,7 +21,7 @@ namespace V2UDPmp3Server
                 new ProcessStartInfo
                 {
                     FileName = "nethogs",
-                    ArgumentList = { "" }
+                    ArgumentList = { "-a" }
                 });
             process.WaitForExit();
 
