@@ -17,7 +17,7 @@ namespace V2UDPmp3Server
         {
             //Console.WriteLine("Hello World!");
 
-            ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "/bin/bash", Arguments = "ll", };
+            ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "!/bin/bash", Arguments = "ll", };
             Process proc = new Process() { StartInfo = startInfo, };
             proc.Start();
 
