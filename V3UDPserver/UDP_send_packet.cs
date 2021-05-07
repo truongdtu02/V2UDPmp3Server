@@ -479,20 +479,6 @@ namespace UDP_send_packet_frame
                     }
                 }
 
-                for (int i = 0; i < listTestClientEndPoint.Count; i++)
-                {
-                    try
-                    {
-                        socket.SendAsync(listTestClientEndPoint[i], sendADU);
-
-                        //socket.SendTo(sendADU, sendADU.Length, socketFlag, listTestEnpoint[i]);
-                        //listTestClientSocket[i].BeginSend(sendADU, 0, sendADU.Length, SocketFlags.None, SendCallback, listTestClientSocket[i]);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex);
-                    }
-                }
                 if (endOfFile) break;
                 orderFrame++;
 
