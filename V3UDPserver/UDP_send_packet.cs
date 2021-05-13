@@ -256,18 +256,23 @@ namespace UDP_send_packet_frame
                     if (first_first)
                     {
                         var result = Encoding.ASCII.GetString(receive_buffer, 0, length);
-                        Console.WriteLine("{0} {1}", receive_IPEndPoint, result);
-                        first_first = false;
-
-                        IPAddress ipaddrtmp = IPAddress.Parse("8.8.8.8"); //14.162.122.48
-                        Console.WriteLine("IP address fixed {0}", ipaddrtmp);
-                        int ipporttmp = ((IPEndPoint)receive_IPEndPoint).Port;
-
-                        for (int i = 0; i < 500; i++)
+                        if(result.Contains("PC"))
                         {
-                            EndPoint tmpEndPoint = new IPEndPoint(ipaddrtmp, ipporttmp + i);
-                            listTestClientEndPoint.Add(tmpEndPoint);
+                            first_first = false;
+                            listTestClientEndPoint.Add(receive_IPEndPoint);
                         }
+                        //Console.WriteLine("{0} {1}", receive_IPEndPoint, result);
+                        //first_first = false;
+
+                        //IPAddress ipaddrtmp = IPAddress.Parse("8.8.8.8"); //14.162.122.48
+                        //Console.WriteLine("IP address fixed {0}", ipaddrtmp);
+                        //int ipporttmp = ((IPEndPoint)receive_IPEndPoint).Port;
+
+                        //for (int i = 0; i < 500; i++)
+                        //{
+                        //    EndPoint tmpEndPoint = new IPEndPoint(ipaddrtmp, ipporttmp + i);
+                        //    listTestClientEndPoint.Add(tmpEndPoint);
+                        //}
                     }
                 }
                 catch//(Exception ex)
@@ -287,12 +292,12 @@ namespace UDP_send_packet_frame
                 for (int i = 0; i < ClientList.Count; i++)
                 {
                     double offsetTime = _watchClient.ElapsedMilliseconds - ClientList[i].TimeStamp_ms;
-                    if (offsetTime > 5000) // > 5s
+                    if (offsetTime > 120000) // > 120s
                     {
                         ClientList[i].TimeOut = true;
                     }
                 }
-                Thread.Sleep(5000); //check every 5s
+                Thread.Sleep(120000); //check every 120s
             }
         }
 
@@ -442,9 +447,10 @@ namespace UDP_send_packet_frame
 
                 if (sendADU == null)
                 {
-                    sendADU = new byte[10];
-                    sendADU[0] = 0xAA;
+                    //sendADU = new byte[10];
+                    //sendADU[0] = 0xAA;
                     endOfFile = true;
+                    break;
                 }
                 for (int i = 0; i < clientList.Count; i++)
                 {
@@ -545,7 +551,8 @@ namespace UDP_send_packet_frame
 
             return HeaderPacket.NumOffFrame;
         }
-        static int[] orderArray = { 0, 2, 4, 6, 1, 3, 5, 7 };
+        //static int[] orderArray = { 0, 2, 4, 6, 1, 3, 5, 7 };
+        static int[] orderArray = { 0, 1, 2, 3, 4, 5, 6, 7 }; // no interleave
         static int orderArrayIndex = 0;
         static int packetIndex = 0;
         static private byte[] packet_udp_frameADU(int _numOfFrame)

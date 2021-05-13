@@ -31,7 +31,7 @@ namespace V2UDPmp3Server
                  new client_IPEndPoint(){ ID_client = "00000007", On = true},
                  new client_IPEndPoint(){ ID_client = "00000008", On = true},
                  new client_IPEndPoint(){ ID_client = "00000009", On = true},
-                 new client_IPEndPoint(){ ID_client = "000000010", On = true},
+                 new client_IPEndPoint(){ ID_client = "sim", On = true, NumSend = 1},
             };
             string curPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             if (curPath.Contains("/")) curPath += "/";
@@ -50,7 +50,7 @@ namespace V2UDPmp3Server
             //udpSocket.launchUDPsocket(soundList, clientList);
             udpSocket.launchUDPsocket(soundList, clientList);
 
-            //control(udpSocket);
+            control(udpSocket);
 
 
             //using var process = Process.Start(
@@ -61,13 +61,13 @@ namespace V2UDPmp3Server
             //    });
             //process.WaitForExit();
 
-            Thread nethos = new Thread(() =>
-            {
-                ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "bmon", Arguments = "-a", };
-                Process proc = new Process() { StartInfo = startInfo, };
-                proc.Start();
-            });
-            nethos.Start();
+            //Thread nethos = new Thread(() =>
+            //{
+            //    ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "bmon", Arguments = "-a", };
+            //    Process proc = new Process() { StartInfo = startInfo, };
+            //    proc.Start();
+            //});
+            //nethos.Start();
         }
 
         static void control(UDPsocket udpSocket)
