@@ -84,7 +84,7 @@ namespace UDP_send_packet_frame
         //save duration and time playing of current song
         int duration_song_s = 0;
         int timePlaying_song_s = 0;
-        int songID = 0;
+        static int songID = 0;
         int frameID = 0;
         public int Duration_song_s { get => duration_song_s; }
         public int TimePlaying_song_s { get => timePlaying_song_s; }
@@ -558,14 +558,16 @@ namespace UDP_send_packet_frame
         static private byte[] packet_udp_frameADU(int _numOfFrame)
         {
             int iListADU = (_numOfFrame / 8) * 8 + orderArray[orderArrayIndex];
-            int sizeOfADUpacket = aduFrameList[iListADU].Length + 2 + 4; //2B checksum, 4B id adu frame
+            int sizeOfADUpacket = aduFrameList[iListADU].Length + 2 + 4 + 4; //2B checksum, 4B id adu frame, 4B idSong
             byte[] tmpADUpacket = new byte[sizeOfADUpacket];
             //copy adu id
             System.Buffer.BlockCopy(BitConverter.GetBytes(iListADU), 0, tmpADUpacket, 2, 4);
+            //copy song id
+            System.Buffer.BlockCopy(BitConverter.GetBytes(songID + 1), 0, tmpADUpacket, 2 + 4, 4);
             //copy adu data
-            System.Buffer.BlockCopy(aduFrameList[iListADU], 0, tmpADUpacket, 2 + 4, aduFrameList[iListADU].Length);
+            System.Buffer.BlockCopy(aduFrameList[iListADU], 0, tmpADUpacket, 2 + 4 + 4, aduFrameList[iListADU].Length);
             //checksum
-            UInt16 checkSum = caculateChecksum(tmpADUpacket, 2, 4 + aduFrameList[iListADU].Length);
+            UInt16 checkSum = caculateChecksum(tmpADUpacket, 2, 4 + 4 + aduFrameList[iListADU].Length);
             //copy checksum
             System.Buffer.BlockCopy(BitConverter.GetBytes(checkSum), 0, tmpADUpacket, 0, 2);
 
