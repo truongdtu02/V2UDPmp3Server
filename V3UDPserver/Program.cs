@@ -65,17 +65,18 @@ namespace V2UDPmp3Server
                     CreateNoWindow = false,
                     //Arguments = $"-y -i {soundList[0].FilePath} -codec:a libmp3lame -b:a 8k -ac 1 -ar 24000 {Path.Combine(curPath, "b18k.mp3")}",
                 };
-                Process proc = new Process();
 
                 DirectoryInfo di = new DirectoryInfo(curPath);
                 foreach (FileInfo file in di.GetFiles())
                 {
                     if (file.Extension == ".mp3")
                     {
+                        Process proc = new Process();
                         startInfo.Arguments = $"-y -i {Path.Combine(curPath, file.Name)} -b:a 8k -ac 1 -ar 24000 {Path.Combine(subPath, file.Name)}";
                         proc.StartInfo = startInfo;
                         proc.Start();
                         proc.WaitForExit();
+                        proc.Close();
                     }
                 }
                 converterDone = true;
