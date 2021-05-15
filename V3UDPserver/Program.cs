@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
 using UDP_send_packet_frame;
+using Xabe.FFmpeg;
 
 namespace V2UDPmp3Server
 {
@@ -13,9 +16,15 @@ namespace V2UDPmp3Server
     {
         public static List<client_IPEndPoint> clientList;
 
+        
+
         static void Main(string[] args)
         {
-            //Console.WriteLine("Hello World!");
+            //Set directory where app should look for FFmpeg 
+            //FFmpeg.ExecutablesPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FFmpeg");
+            //Get latest version of FFmpeg. It's great idea if you don't know if you had installed FFmpeg.
+            //await FFmpeg.GetLatestVersion();
+
 
 
             clientList = new List<client_IPEndPoint>()
@@ -33,24 +42,32 @@ namespace V2UDPmp3Server
                  new client_IPEndPoint(){ ID_client = "00000009", On = true},
                  new client_IPEndPoint(){ ID_client = "sim", On = true, NumSend = 1},
             };
+
             string curPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            if (curPath.Contains("/")) curPath += "/";
-            else curPath += "\\";
+
+            string subPath = "converted"; // Your code goes here
+            subPath = Path.Combine(curPath, subPath);
+            //check if it is exits delete
+            if (Directory.Exists(subPath)) Directory.Delete(subPath, true);
+
+            Directory.CreateDirectory(subPath); //create
 
             List<soundTrack> soundList = new List<soundTrack>()
             {
-                new soundTrack(){ FilePath = curPath + "bai1.mp3"},
-                new soundTrack(){ FilePath = curPath + "bai2.mp3"},
-                new soundTrack(){ FilePath = curPath + "bai3.mp3"}
+                new soundTrack(){ FilePath = Path.Combine(curPath, "bai1.mp3") },
+                new soundTrack(){ FilePath = Path.Combine(curPath, "bai2.mp3") },
+                new soundTrack(){ FilePath = Path.Combine(curPath, "bai3.mp3") }
                 //new soundTrack(){ FilePath = "LoveIsBlue.mp3"}
             };
 
-            //launch
-            UDPsocket udpSocket = new UDPsocket();
-            //udpSocket.launchUDPsocket(soundList, clientList);
-            udpSocket.launchUDPsocket(soundList, clientList);
+            RunConversion(curPath, subPath);
 
-            control(udpSocket);
+            //launch
+            //UDPsocket udpSocket = new UDPsocket();
+            //udpSocket.launchUDPsocket(soundList, clientList);
+            //udpSocket.launchUDPsocket(soundList, clientList);
+
+            //control(udpSocket);
 
 
             //using var process = Process.Start(
@@ -68,6 +85,75 @@ namespace V2UDPmp3Server
             //    proc.Start();
             //});
             //nethos.Start();
+        }
+        private static IEnumerable GetFilesToConvert(string directoryPath)
+        {
+            //Return all files excluding mp4 because I want convert it to mp4
+            return new DirectoryInfo(directoryPath).GetFiles().Where(x => x.Extension == ".mp3");
+        }
+
+        static async void RunConversion(string inPath, string outPath)
+        {
+            Queue filesToConvert = new Queue();
+            DirectoryInfo di = new DirectoryInfo(inPath);
+
+            foreach (FileInfo file in di.GetFiles())
+            {
+                if (file.Extension == ".mp3") filesToConvert.Enqueue(file);
+            }
+            await Console.Out.WriteLineAsync($"Find {filesToConvert.Count} files to convert.");
+
+            //string filePath = Path.Combine("C:", "samples", "SampleVideo.mp4");
+            //string inputMp3Path = Path.Combine("E:", "bai1.mp3");
+            //IMediaInfo mediaInfo = await FFmpeg.GetMediaInfo(inputMp3Path);
+
+            //while (filesToConvert.(out FileInfo fileToConvert))
+            foreach(FileInfo fileToConvert in filesToConvert)
+            {
+                //Save file to the same location with changed extension
+                //string outputFileName = Path.ChangeExtension(fileToConvert.FullName, ".mp4");
+                IMediaInfo mediaInfo = await FFmpeg.GetMediaInfo(fileToConvert.DirectoryName);
+                //var mediaInfo = await MediaInfo.Get(fileToConvert);
+                //var videoStream = mediaInfo.VideoStreams.First();
+                var audioStream = mediaInfo.AudioStreams.First();
+
+                audioStream.SetBitrate(8000)
+                    .SetChannels(1)
+                    .SetSampleRate(24000)
+                    .SetCodec(AudioCodec.mp3);
+                ////Change some parameters of video stream
+                ////videoStream
+                ////    Rotate video counter clockwise
+                ////    .Rotate(RotateDegrees.CounterClockwise)
+                ////    Set size to 480p
+                ////    .SetSize(VideoSize.Hd480)
+                ////    Set codec which will be used to encode file.If not set it's set automatically according to output file extension
+                ////   .SetCodec(VideoCodec.H264);
+
+                //Create new conversion object
+                var conversion = FFmpeg.Conversions.New()
+                    //Add audio stream to output file
+                    .AddStream(audioStream)
+                    //Set output file path
+                    .SetOutput(outPath)
+                    //SetOverwriteOutput to overwrite files. It's useful when we already run application before
+                    .SetOverwriteOutput(true)
+                    //Disable multithreading
+                    .UseMultiThread(false)
+                    //Set conversion preset. You have to chose between file size and quality of video and duration of conversion
+                    .SetPreset(ConversionPreset.UltraFast);
+
+                //Add log to OnProgress
+                conversion.OnProgress += async (sender, args) =>
+                {
+                    //Show all output from FFmpeg to console
+                    await Console.Out.WriteLineAsync($"[{args.Duration}/{args.TotalLength}][{args.Percent}%] {fileToConvert.Name}");
+                };
+                //Start conversion
+                await conversion.Start();
+
+                await Console.Out.WriteLineAsync($"Finished converion file [{fileToConvert.Name}]");
+            }
         }
 
         static void control(UDPsocket udpSocket)
