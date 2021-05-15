@@ -79,17 +79,20 @@ namespace V2UDPmp3Server
             //    });
             //process.WaitForExit();
             //ffmpeg.exe -i E:\b1.mp3 -codec:a libmp3lame -b:a 48k -ac 1 -ar 24000 D:\b1mono.mp3
+            bool converDone = false;
             Thread nethos = new Thread(() =>
             {
                 ProcessStartInfo startInfo = new ProcessStartInfo()
                 {
                     FileName = "ffmpeg",
+                    WindowStyle = ProcessWindowStyle.Hidden,
                     Arguments = $"-y -i {soundList[0].FilePath} -codec:a libmp3lame -b:a 8k -ac 1 -ar 24000 {Path.Combine(curPath, "b18k.mp3")}",
                 };
                 Process proc = new Process() { StartInfo = startInfo };
                 proc.Start();
-
-                Console.WriteLine("Done");
+                proc.WaitForExit();
+                Console.WriteLine("Donw");
+                
                 //DirectoryInfo di = new DirectoryInfo(curPath);
                 //foreach (FileInfo file in di.GetFiles())
                 //{
