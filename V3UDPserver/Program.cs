@@ -86,6 +86,8 @@ namespace V2UDPmp3Server
                 {
                     FileName = "ffmpeg",
                     WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = false,
+                    RedirectStandardOutput = false,
                     Arguments = $"-y -i {soundList[0].FilePath} -codec:a libmp3lame -b:a 8k -ac 1 -ar 24000 {Path.Combine(curPath, "b18k.mp3")}",
                 };
                 Process proc = new Process() { StartInfo = startInfo };
