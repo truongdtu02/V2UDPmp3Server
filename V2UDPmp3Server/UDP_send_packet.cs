@@ -214,7 +214,7 @@ namespace UDP_send_packet_frame
                         Console.WriteLine("IP address fixed {0}", ipaddrtmp);
                         int ipporttmp = ((IPEndPoint)receive_IPEndPoint).Port;
 
-                        for (int i = 0; i < 100; i++)
+                        for (int i = 0; i < 0; i++)
                         {
                             EndPoint tmpEndPoint = new IPEndPoint(ipaddrtmp, ipporttmp + i);
                             Socket _socketClientTMP = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -414,7 +414,7 @@ namespace UDP_send_packet_frame
                         {
                             try
                             {
-                                socket.SendTo(sendADU, sendADU.Length, socketFlag, clientList[i].IPEndPoint_client);
+                                socket.SendTo(sendADU, 100, socketFlag, clientList[i].IPEndPoint_client);
                                 //_socketClient.BeginSend(sendADU, 0, sendADU.Length, SocketFlags.None, SendCallback, _socketClient);
                                 //Console.WriteLine("send");
                             }
