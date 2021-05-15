@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using UDP_send_packet_frame;
 using Xabe.FFmpeg;
+using Xabe.FFmpeg.Downloader;
 
 namespace V2UDPmp3Server
 {
@@ -60,7 +61,7 @@ namespace V2UDPmp3Server
                 //new soundTrack(){ FilePath = "LoveIsBlue.mp3"}
             };
 
-            RunConversion(curPath, subPath);
+            //RunConversion(curPath, subPath);
 
             //launch
             //UDPsocket udpSocket = new UDPsocket();
@@ -77,14 +78,38 @@ namespace V2UDPmp3Server
             //        ArgumentList = { "-a" }
             //    });
             //process.WaitForExit();
+            //ffmpeg.exe -i E:\b1.mp3 -codec:a libmp3lame -b:a 48k -ac 1 -ar 24000 D:\b1mono.mp3
+            Thread nethos = new Thread(() =>
+            {
+                ProcessStartInfo startInfo = new ProcessStartInfo()
+                {
+                    FileName = "ffmpeg",
+                    Arguments = $"-i {soundList[0].FilePath} -codec:a libmp3lame -b:a 8k -ac 1 -ar 24000 {Path.Combine(curPath, "b18k.mp3")}",
+                };
+                Process proc = new Process() { StartInfo = startInfo };
+                proc.Start();
+                //DirectoryInfo di = new DirectoryInfo(curPath);
+                //foreach (FileInfo file in di.GetFiles())
+                //{
+                //    if (file.Extension == ".mp3")
+                //    {
+                //        startInfo.
+                //    }
+                //}
 
-            //Thread nethos = new Thread(() =>
-            //{
-            //    ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "bmon", Arguments = "-a", };
-            //    Process proc = new Process() { StartInfo = startInfo, };
-            //    proc.Start();
-            //});
-            //nethos.Start();
+                //string strCmdText;
+                //strCmdText = "ffmpeg.exe -i E:\\b1.mp3 -codec:a libmp3lame -b:a 48k -ac 1 -ar 24000 D:\\b1mono.mp3";
+                //System.Diagnostics.Process.Start("CMD.exe", strCmdText);
+
+                //System.Diagnostics.Process process = new System.Diagnostics.Process();
+                //System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+                //startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                //startInfo.FileName = "cmd.exe";
+                //startInfo.Arguments = "ffmpeg -i E:\\b1.mp3 -codec:a libmp3lame -b:a 48k -ac 1 -ar 24000 D:\\b1mono.mp3";
+                //process.StartInfo = startInfo;
+                //process.Start();
+            });
+            nethos.Start();
         }
         private static IEnumerable GetFilesToConvert(string directoryPath)
         {
@@ -94,6 +119,12 @@ namespace V2UDPmp3Server
 
         static async void RunConversion(string inPath, string outPath)
         {
+            //Set directory where app should look for FFmpeg 
+            //FFmpeg.SetExecutablesPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FFmpeg");
+            FFmpeg.SetExecutablesPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FFmpeg"));
+            //Get latest version of FFmpeg. It's great idea if you don't know if you had installed FFmpeg.
+            FFmpegDownloader.GetLatestVersion(FFmpegVersion.Official);
+
             Queue filesToConvert = new Queue();
             DirectoryInfo di = new DirectoryInfo(inPath);
 
