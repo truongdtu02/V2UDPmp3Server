@@ -88,6 +88,8 @@ namespace V2UDPmp3Server
                 };
                 Process proc = new Process() { StartInfo = startInfo };
                 proc.Start();
+
+                Console.WriteLine("Done");
                 //DirectoryInfo di = new DirectoryInfo(curPath);
                 //foreach (FileInfo file in di.GetFiles())
                 //{
