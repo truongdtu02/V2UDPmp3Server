@@ -414,7 +414,10 @@ namespace UDP_send_packet_frame
                         {
                             try
                             {
-                                socket.SendTo(sendADU, 100, socketFlag, clientList[i].IPEndPoint_client);
+                                if(sendADU.Length > 100)
+                                    socket.SendTo(sendADU, 100, socketFlag, clientList[i].IPEndPoint_client);
+                                else
+                                    socket.SendTo(sendADU, sendADU.Length, socketFlag, clientList[i].IPEndPoint_client);
                                 //_socketClient.BeginSend(sendADU, 0, sendADU.Length, SocketFlags.None, SendCallback, _socketClient);
                                 //Console.WriteLine("send");
                             }
