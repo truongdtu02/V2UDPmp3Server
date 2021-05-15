@@ -91,20 +91,21 @@ namespace V2UDPmp3Server
             }
             Console.WriteLine("Done converter");
 
-            //List<soundTrack> soundList = new List<soundTrack>();
-            //{
-            //    new soundTrack(){ FilePath = Path.Combine(curPath, "bai1.mp3") },
-            //    new soundTrack(){ FilePath = Path.Combine(curPath, "bai2.mp3") },
-            //    new soundTrack(){ FilePath = Path.Combine(curPath, "bai3.mp3") }
-            //    //new soundTrack(){ FilePath = "LoveIsBlue.mp3"}
-            //};
+            List<soundTrack> soundList = new List<soundTrack>();
+            DirectoryInfo di = new DirectoryInfo(subPath);
+            foreach (FileInfo file in di.GetFiles())
+            {
+                if (file.Extension == ".mp3")
+                {
+                    soundList.Add(new soundTrack() { FilePath = Path.Combine(subPath, file.Name) });
+                }
+            }
 
             //launch
-            //UDPsocket udpSocket = new UDPsocket();
-            //udpSocket.launchUDPsocket(soundList, clientList);
-            //udpSocket.launchUDPsocket(soundList, clientList);
+            UDPsocket udpSocket = new UDPsocket();
+            udpSocket.launchUDPsocket(soundList, clientList);
 
-            //control(udpSocket);
+            control(udpSocket);
         }
         private static IEnumerable GetFilesToConvert(string directoryPath)
         {
