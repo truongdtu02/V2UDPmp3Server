@@ -84,7 +84,7 @@ namespace V2UDPmp3Server
                 ProcessStartInfo startInfo = new ProcessStartInfo()
                 {
                     FileName = "ffmpeg",
-                    Arguments = $"-i {soundList[0].FilePath} -codec:a libmp3lame -b:a 8k -ac 1 -ar 24000 {Path.Combine(curPath, "b18k.mp3")}",
+                    Arguments = $"-y -i {soundList[0].FilePath} -codec:a libmp3lame -b:a 8k -ac 1 -ar 24000 {Path.Combine(curPath, "b18k.mp3")}",
                 };
                 Process proc = new Process() { StartInfo = startInfo };
                 proc.Start();
