@@ -110,6 +110,7 @@ namespace V2UDPmp3Server
             //while (filesToConvert.(out FileInfo fileToConvert))
             foreach(FileInfo fileToConvert in filesToConvert)
             {
+                Console.WriteLine("1");
                 //Save file to the same location with changed extension
                 //string outputFileName = Path.ChangeExtension(fileToConvert.FullName, ".mp4");
                 IMediaInfo mediaInfo = await FFmpeg.GetMediaInfo(fileToConvert.DirectoryName);
