@@ -202,26 +202,26 @@ namespace UDP_send_packet_frame
                     length = socket.ReceiveFrom(receive_buffer, ref receive_IPEndPoint);
                     //var result = Encoding.ASCII.GetString(receive_buffer, 0, length);
                     //Console.WriteLine("{0} {1}", receive_IPEndPoint, result);
-                    if (first_first)
-                    {
-                        var result = Encoding.ASCII.GetString(receive_buffer, 0, length);
-                        Console.WriteLine("{0} {1}", receive_IPEndPoint, result);
-                        first_first = false;
+                    //if (first_first)
+                    //{
+                    //    var result = Encoding.ASCII.GetString(receive_buffer, 0, length);
+                    //    Console.WriteLine("{0} {1}", receive_IPEndPoint, result);
+                    //    first_first = false;
 
-                        _socketClient.Connect(receive_IPEndPoint);
+                    //    _socketClient.Connect(receive_IPEndPoint);
 
-                        IPAddress ipaddrtmp = IPAddress.Parse("8.8.8.8");
-                        Console.WriteLine("IP address fixed {0}", ipaddrtmp);
-                        int ipporttmp = ((IPEndPoint)receive_IPEndPoint).Port;
+                    //    IPAddress ipaddrtmp = IPAddress.Parse("8.8.8.8");
+                    //    Console.WriteLine("IP address fixed {0}", ipaddrtmp);
+                    //    int ipporttmp = ((IPEndPoint)receive_IPEndPoint).Port;
 
-                        for (int i = 0; i < 0; i++)
-                        {
-                            EndPoint tmpEndPoint = new IPEndPoint(ipaddrtmp, ipporttmp + i);
-                            Socket _socketClientTMP = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                            _socketClientTMP.Connect(tmpEndPoint);
-                            listTestClientSocket.Add(_socketClientTMP);
-                        }
-                    }
+                    //    for (int i = 0; i < 0; i++)
+                    //    {
+                    //        EndPoint tmpEndPoint = new IPEndPoint(ipaddrtmp, ipporttmp + i);
+                    //        Socket _socketClientTMP = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                    //        _socketClientTMP.Connect(tmpEndPoint);
+                    //        listTestClientSocket.Add(_socketClientTMP);
+                    //    }
+                    //}
                 }
                 catch//(Exception ex)
                 {
@@ -460,7 +460,7 @@ namespace UDP_send_packet_frame
                 //get current time playing
                 timePlaying_song_s = (int)mark_time / 1000; //second
                 timePoint = mark_time - stopWatchSend.Elapsed.TotalMilliseconds;
-                if (timePoint < 0) Console.WriteLine(timePoint);
+                //if (timePoint < 0) Console.WriteLine(timePoint);
                 if (timePoint > 0)
                 {
                     Thread.Sleep((int)timePoint);
