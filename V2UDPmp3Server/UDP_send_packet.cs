@@ -240,12 +240,12 @@ namespace UDP_send_packet_frame
                 for (int i = 0; i < ClientList.Count; i++)
                 {
                     double offsetTime = _watchClient.ElapsedMilliseconds - ClientList[i].TimeStamp_ms;
-                    if (offsetTime > 5000) // > 5s
+                    if (offsetTime > 50000) // > 5s
                     {
                         ClientList[i].TimeOut = true;
                     }
                 }
-                Thread.Sleep(5000); //check every 5s
+                Thread.Sleep(50000); //check every 5s
             }
         }
 
