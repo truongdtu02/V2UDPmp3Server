@@ -145,15 +145,15 @@ namespace V2UDPmp3Server
                     .SetPreset(ConversionPreset.UltraFast);
 
                 //Add log to OnProgress
-                conversion.OnProgress += async (sender, args) =>
-                {
-                    //Show all output from FFmpeg to console
-                    await Console.Out.WriteLineAsync($"[{args.Duration}/{args.TotalLength}][{args.Percent}%] {fileToConvert.Name}");
-                };
+                //conversion.OnProgress += async (sender, args) =>
+                //{
+                //    //Show all output from FFmpeg to console
+                //    await Console.Out.WriteLineAsync($"[{args.Duration}/{args.TotalLength}][{args.Percent}%] {fileToConvert.Name}");
+                //};
                 //Start conversion
-                await conversion.Start();
+                conversion.Start();
 
-                await Console.Out.WriteLineAsync($"Finished converion file [{fileToConvert.Name}]");
+                Console.WriteLine($"Finished converion file [{fileToConvert.Name}]");
             }
         }
 
