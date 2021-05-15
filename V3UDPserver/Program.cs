@@ -53,15 +53,50 @@ namespace V2UDPmp3Server
 
             Directory.CreateDirectory(subPath); //create
 
-            List<soundTrack> soundList = new List<soundTrack>()
-            {
-                new soundTrack(){ FilePath = Path.Combine(curPath, "bai1.mp3") },
-                new soundTrack(){ FilePath = Path.Combine(curPath, "bai2.mp3") },
-                new soundTrack(){ FilePath = Path.Combine(curPath, "bai3.mp3") }
-                //new soundTrack(){ FilePath = "LoveIsBlue.mp3"}
-            };
+            
 
-            //RunConversion(curPath, subPath);
+            //ffmpeg.exe -i E:\b1.mp3 -codec:a libmp3lame -b:a 48k -ac 1 -ar 24000 D:\b1mono.mp3
+            bool converterDone = false;
+            Thread nethos = new Thread(() =>
+            {
+                ProcessStartInfo startInfo = new ProcessStartInfo()
+                {
+                    FileName = "ffmpeg",
+                    CreateNoWindow = false,
+                    //Arguments = $"-y -i {soundList[0].FilePath} -codec:a libmp3lame -b:a 8k -ac 1 -ar 24000 {Path.Combine(curPath, "b18k.mp3")}",
+                };
+                Process proc = new Process();
+
+                DirectoryInfo di = new DirectoryInfo(curPath);
+                foreach (FileInfo file in di.GetFiles())
+                {
+                    if (file.Extension == ".mp3")
+                    {
+                        startInfo.Arguments = $"-y -i {Path.Combine(curPath, file.Name)} -b:a 8k -ac 1 -ar 24000 {Path.Combine(subPath, file.Name)}";
+                        proc.StartInfo = startInfo;
+                        proc.Start();
+                        proc.WaitForExit();
+                    }
+                }
+                converterDone = true;
+            });
+            nethos.Start();
+
+            //wait until converter is done
+            while(true)
+            {
+                if (converterDone) break;
+                Thread.Sleep(1000);
+            }
+            Console.WriteLine("Done converter");
+
+            //List<soundTrack> soundList = new List<soundTrack>();
+            //{
+            //    new soundTrack(){ FilePath = Path.Combine(curPath, "bai1.mp3") },
+            //    new soundTrack(){ FilePath = Path.Combine(curPath, "bai2.mp3") },
+            //    new soundTrack(){ FilePath = Path.Combine(curPath, "bai3.mp3") }
+            //    //new soundTrack(){ FilePath = "LoveIsBlue.mp3"}
+            //};
 
             //launch
             //UDPsocket udpSocket = new UDPsocket();
@@ -69,54 +104,6 @@ namespace V2UDPmp3Server
             //udpSocket.launchUDPsocket(soundList, clientList);
 
             //control(udpSocket);
-
-
-            //using var process = Process.Start(
-            //    new ProcessStartInfo
-            //    {
-            //        FileName = "nethogs",
-            //        ArgumentList = { "-a" }
-            //    });
-            //process.WaitForExit();
-            //ffmpeg.exe -i E:\b1.mp3 -codec:a libmp3lame -b:a 48k -ac 1 -ar 24000 D:\b1mono.mp3
-            bool converDone = false;
-            Thread nethos = new Thread(() =>
-            {
-                ProcessStartInfo startInfo = new ProcessStartInfo()
-                {
-                    FileName = "ffmpeg",
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    CreateNoWindow = false,
-                    RedirectStandardOutput = false,
-                    Arguments = $"-y -i {soundList[0].FilePath} -codec:a libmp3lame -b:a 8k -ac 1 -ar 24000 {Path.Combine(curPath, "b18k.mp3")} &",
-                };
-                Process proc = new Process() { StartInfo = startInfo };
-                proc.Start();
-                proc.WaitForExit();
-                Console.WriteLine("Donw");
-                
-                //DirectoryInfo di = new DirectoryInfo(curPath);
-                //foreach (FileInfo file in di.GetFiles())
-                //{
-                //    if (file.Extension == ".mp3")
-                //    {
-                //        startInfo.
-                //    }
-                //}
-
-                //string strCmdText;
-                //strCmdText = "ffmpeg.exe -i E:\\b1.mp3 -codec:a libmp3lame -b:a 48k -ac 1 -ar 24000 D:\\b1mono.mp3";
-                //System.Diagnostics.Process.Start("CMD.exe", strCmdText);
-
-                //System.Diagnostics.Process process = new System.Diagnostics.Process();
-                //System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
-                //startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-                //startInfo.FileName = "cmd.exe";
-                //startInfo.Arguments = "ffmpeg -i E:\\b1.mp3 -codec:a libmp3lame -b:a 48k -ac 1 -ar 24000 D:\\b1mono.mp3";
-                //process.StartInfo = startInfo;
-                //process.Start();
-            });
-            nethos.Start();
         }
         private static IEnumerable GetFilesToConvert(string directoryPath)
         {
