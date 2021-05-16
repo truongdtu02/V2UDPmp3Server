@@ -41,7 +41,7 @@ namespace UDPechoServer
         static void Main(string[] args)
         {
             // UDP server port
-            int port = 3333;
+            int port = 1308;
             if (args.Length > 0)
                 port = int.Parse(args[0]);
 
