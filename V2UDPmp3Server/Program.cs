@@ -97,7 +97,7 @@ namespace V2UDPmp3Server
             udpSocket.UDPsocketListen();
             //create UDP socket for sending mp3 frame to client
             udpSocket.UDPsocketSend();
-            control(udpSocket);
+            //control(udpSocket);
         }
 
         static void control(UDPsocket udpSocket)

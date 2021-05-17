@@ -72,7 +72,7 @@ namespace V2UDPmp3Server
                     if (file.Extension == ".mp3")
                     {
                         Process proc = new Process();
-                        startInfo.Arguments = $"-y -i {Path.Combine(curPath, file.Name)} -b:a 8k -ac 1 -ar 24000 {Path.Combine(subPath, file.Name)}";
+                        startInfo.Arguments = $"-y -i {Path.Combine(curPath, file.Name)} -b:a 48k -ac 1 -ar 24000 {Path.Combine(subPath, file.Name)}";
                         proc.StartInfo = startInfo;
                         proc.Start();
                         proc.WaitForExit();
