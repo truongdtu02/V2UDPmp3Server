@@ -256,7 +256,7 @@ namespace UDP_send_packet_frame
                     if (first_first)
                     {
                         var result = Encoding.ASCII.GetString(receive_buffer, 0, length);
-                        if(result.Contains("PC"))
+                        if(result.Contains("3"))
                         {
                             first_first = false;
                             listTestClientEndPoint.Add(receive_IPEndPoint);
@@ -292,12 +292,12 @@ namespace UDP_send_packet_frame
                 for (int i = 0; i < ClientList.Count; i++)
                 {
                     double offsetTime = _watchClient.ElapsedMilliseconds - ClientList[i].TimeStamp_ms;
-                    if (offsetTime > 120000) // > 120s
+                    if (offsetTime > 60000) // > 60s
                     {
                         ClientList[i].TimeOut = true;
                     }
                 }
-                Thread.Sleep(120000); //check every 120s
+                Thread.Sleep(60000); //check every 60s
             }
         }
 
@@ -486,10 +486,12 @@ namespace UDP_send_packet_frame
                 }
 
                 if (endOfFile) break;
+
                 orderFrame++;
 
                 //Console.WriteLine(orderFrame);
                 mark_time = 24 * orderFrame; //point to next time frame
+                
                 //get current time playing
                 timePlaying_song_s = (int)mark_time / 1000; //second
                 timePoint = mark_time - stopWatchSend.Elapsed.TotalMilliseconds;
@@ -557,11 +559,17 @@ namespace UDP_send_packet_frame
         static int packetIndex = 0;
         static private byte[] packet_udp_frameADU(int _numOfFrame)
         {
-            int iListADU = (_numOfFrame / 8) * 8 + orderArray[orderArrayIndex];
+            if (_numOfFrame == aduFrameList.Count)
+            {
+                return null;
+            }
+
+            //int iListADU = (_numOfFrame / 8) * 8 + orderArray[orderArrayIndex];
+            int iListADU = _numOfFrame;
             int sizeOfADUpacket = aduFrameList[iListADU].Length + 2 + 4 + 4; //2B checksum, 4B id adu frame, 4B idSong
             byte[] tmpADUpacket = new byte[sizeOfADUpacket];
             //copy adu id
-            System.Buffer.BlockCopy(BitConverter.GetBytes(iListADU), 0, tmpADUpacket, 2, 4);
+            System.Buffer.BlockCopy(BitConverter.GetBytes(iListADU + 1), 0, tmpADUpacket, 2, 4); //start from 1
             //copy song id
             System.Buffer.BlockCopy(BitConverter.GetBytes(songID + 1), 0, tmpADUpacket, 2 + 4, 4);
             //copy adu data
@@ -572,17 +580,17 @@ namespace UDP_send_packet_frame
             System.Buffer.BlockCopy(BitConverter.GetBytes(checkSum), 0, tmpADUpacket, 0, 2);
 
             //
-            orderArrayIndex++;
-            if (orderArrayIndex >= 8)
-            {
-                orderArrayIndex = 0;
-                packetIndex++;
-                if (packetIndex >= aduFrameList.Count / 8)
-                {
-                    packetIndex = 0;
-                    return null;
-                }
-            }
+            //orderArrayIndex++;
+            //if (orderArrayIndex >= 8)
+            //{
+            //    orderArrayIndex = 0;
+            //    packetIndex++;
+            //    if (packetIndex >= aduFrameList.Count / 8)
+            //    {
+            //        packetIndex = 0;
+            //        return null;
+            //    }
+            //}
 
             return tmpADUpacket;
         }

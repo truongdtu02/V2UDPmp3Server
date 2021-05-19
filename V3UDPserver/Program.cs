@@ -53,8 +53,6 @@ namespace V2UDPmp3Server
 
             Directory.CreateDirectory(subPath); //create
 
-            
-
             //ffmpeg.exe -i E:\b1.mp3 -codec:a libmp3lame -b:a 48k -ac 1 -ar 24000 D:\b1mono.mp3
             bool converterDone = false;
             Thread nethos = new Thread(() =>
