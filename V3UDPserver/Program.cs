@@ -85,7 +85,7 @@ namespace V2UDPmp3Server
                             main_name = file.Name,
                             convert_name = unique_song_ID.ToString()
                         });
-                        file.MoveTo(Path.Combine(curPath, unique_song_IDD.ToString() + file.Extension), true);
+                        file.MoveTo(Path.Combine(curPath, unique_song_ID.ToString() + file.Extension), true);
                         Process proc = new Process();
                         startInfo.Arguments = $"-y -i {Path.Combine(curPath, file.Name)} -b:a 48k -ac 1 -ar 24000 {Path.Combine(subPath, file.Name)}";
                         proc.StartInfo = startInfo;
