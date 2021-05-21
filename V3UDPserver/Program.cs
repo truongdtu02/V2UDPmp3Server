@@ -13,14 +13,38 @@ using Xabe.FFmpeg.Downloader;
 
 namespace V2UDPmp3Server
 {
+    class song_name_id
+    {
+        public string main_name;
+        public string convert_name;
+        public UInt64 uint64_id;
+    }
     class Program
     {
         public static List<client_IPEndPoint> clientList;
 
 
-
+        
         static void Main(string[] args)
         {
+            List<song_name_id> listSongg = new List<song_name_id>();
+            UInt64 unique_song_IDD = 0;
+            DirectoryInfo dir = new DirectoryInfo(@"E:\");
+            foreach (FileInfo filee in dir.GetFiles())
+            {
+                if (filee.Extension == ".mp3")
+                {
+                    listSongg.Add(new song_name_id
+                    {
+                        uint64_id = unique_song_IDD,
+                        main_name = filee.FullName,
+                        convert_name = unique_song_IDD.ToString()
+                    });
+                    filee.MoveTo(Path.Combine("E:", unique_song_IDD.ToString() + filee.Extension), true);
+                    unique_song_IDD++;
+                }
+            }
+
             //Set directory where app should look for FFmpeg 
             //FFmpeg.ExecutablesPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FFmpeg");
             //Get latest version of FFmpeg. It's great idea if you don't know if you had installed FFmpeg.
@@ -57,6 +81,8 @@ namespace V2UDPmp3Server
 
             //ffmpeg.exe -i E:\b1.mp3 -codec:a libmp3lame -b:a 48k -ac 1 -ar 24000 D:\b1mono.mp3
             bool converterDone = false;
+            UInt64 unique_song_ID = 0;
+            List<song_name_id> listSong = new List<song_name_id>();
             Thread nethos = new Thread(() =>
             {
                 ProcessStartInfo startInfo = new ProcessStartInfo()
@@ -71,6 +97,13 @@ namespace V2UDPmp3Server
                 {
                     if (file.Extension == ".mp3")
                     {
+                        listSong.Add(new song_name_id
+                        {
+                            uint64_id = unique_song_ID,
+                            main_name = file.Name,
+                            convert_name = unique_song_ID.ToString()
+                        });
+                        file.MoveTo(Path.Combine(curPath, unique_song_IDD.ToString() + file.Extension), true);
                         Process proc = new Process();
                         startInfo.Arguments = $"-y -i {Path.Combine(curPath, file.Name)} -b:a 48k -ac 1 -ar 24000 {Path.Combine(subPath, file.Name)}";
                         proc.StartInfo = startInfo;
