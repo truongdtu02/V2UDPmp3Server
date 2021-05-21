@@ -27,24 +27,6 @@ namespace V2UDPmp3Server
         
         static void Main(string[] args)
         {
-            List<song_name_id> listSongg = new List<song_name_id>();
-            UInt64 unique_song_IDD = 0;
-            DirectoryInfo dir = new DirectoryInfo(@"E:\");
-            foreach (FileInfo filee in dir.GetFiles())
-            {
-                if (filee.Extension == ".mp3")
-                {
-                    listSongg.Add(new song_name_id
-                    {
-                        uint64_id = unique_song_IDD,
-                        main_name = filee.FullName,
-                        convert_name = unique_song_IDD.ToString()
-                    });
-                    filee.MoveTo(Path.Combine("E:", unique_song_IDD.ToString() + filee.Extension), true);
-                    unique_song_IDD++;
-                }
-            }
-
             //Set directory where app should look for FFmpeg 
             //FFmpeg.ExecutablesPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FFmpeg");
             //Get latest version of FFmpeg. It's great idea if you don't know if you had installed FFmpeg.
