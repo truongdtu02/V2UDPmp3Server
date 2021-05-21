@@ -17,7 +17,7 @@ namespace V2UDPmp3Server
     {
         public static List<client_IPEndPoint> clientList;
 
-        
+
 
         static void Main(string[] args)
         {
@@ -48,10 +48,12 @@ namespace V2UDPmp3Server
 
             string subPath = "converted"; // Your code goes here
             subPath = Path.Combine(curPath, subPath);
-            //check if it is exits delete
-            if (Directory.Exists(subPath)) Directory.Delete(subPath, true);
 
-            Directory.CreateDirectory(subPath); //create
+            /*
+            //check if it is exits delete
+            //if (Directory.Exists(subPath)) Directory.Delete(subPath, true);
+
+            //Directory.CreateDirectory(subPath); //create*/
 
             //ffmpeg.exe -i E:\b1.mp3 -codec:a libmp3lame -b:a 48k -ac 1 -ar 24000 D:\b1mono.mp3
             bool converterDone = false;
@@ -79,10 +81,15 @@ namespace V2UDPmp3Server
                 }
                 converterDone = true;
             });
-            nethos.Start();
+            //check if it is not exist create and convert
+            if (!Directory.Exists(subPath))
+            {
+                Directory.CreateDirectory(subPath); //create*/         
+                nethos.Start();
+            }
 
             //wait until converter is done
-            while(true)
+            while (true)
             {
                 if (converterDone) break;
                 Thread.Sleep(1000);
