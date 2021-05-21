@@ -87,6 +87,11 @@ namespace V2UDPmp3Server
                         });
                         file.MoveTo(Path.Combine(curPath, unique_song_ID.ToString() + file.Extension), true);
                         unique_song_ID++;
+                        //reserve if unique_song_ID == MAX UINT64 have 2 option
+                        /*
+                         *1. delete all song converted with unique_song_ID < MAX, not good
+                         *2. rechange all unique to start from 0
+                         */
                         Process proc = new Process();
                         startInfo.Arguments = $"-y -i {Path.Combine(curPath, file.Name)} -b:a 48k -ac 1 -ar 24000 {Path.Combine(subPath, file.Name)}";
                         proc.StartInfo = startInfo;
