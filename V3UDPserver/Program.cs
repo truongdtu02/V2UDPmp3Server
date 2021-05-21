@@ -102,6 +102,10 @@ namespace V2UDPmp3Server
                 Directory.CreateDirectory(subPath); //create*/         
                 nethos.Start();
             }
+            else
+            {
+                converterDone = true;
+            }
 
             //wait until converter is done
             while (true)
