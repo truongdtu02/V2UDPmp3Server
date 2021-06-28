@@ -72,6 +72,7 @@ namespace V2UDPmp3Server
                     FileName = "ffmpeg",
                     CreateNoWindow = false,
                     //Arguments = $"-y -i {soundList[0].FilePath} -codec:a libmp3lame -b:a 8k -ac 1 -ar 24000 {Path.Combine(curPath, "b18k.mp3")}",
+                    UseShellExecute = false
                 };
 
                 DirectoryInfo di = new DirectoryInfo(curPath);
@@ -336,7 +337,7 @@ namespace V2UDPmp3Server
                             }
                             break;
                     }
-                }
+                0}
             });
             readControl.Priority = ThreadPriority.Lowest;
             readControl.Start();

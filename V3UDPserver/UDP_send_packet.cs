@@ -506,7 +506,7 @@ namespace UDP_send_packet_frame
             timePlaying_song_s = 0;
             duration_song_s = 0;
             stopWatchSend.Stop();
-            Thread.Sleep(500);
+            Thread.Sleep(1500);
             return tmp;
         }
 

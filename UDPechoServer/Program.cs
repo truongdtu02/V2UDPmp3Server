@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using NetCoreServer;
 
 namespace UDPechoServer
@@ -36,10 +38,66 @@ namespace UDPechoServer
         }
     }
 
+    public class testThread : IDisposable
+    {
+        Thread print;
+        int _id;
+        private bool bLoopThread = true;
+        internal void terminateThread()
+        {
+            bLoopThread = false;
+            print = null;
+        }
+        public testThread(int id)
+        {
+            _id = id;
+            print = new Thread(() =>
+            {
+                while (bLoopThread)
+                {
+                    Console.WriteLine(id);
+                    Thread.Sleep(1000);
+                }
+            });
+            print.Start();
+        }
+        ~testThread()
+        {
+            bLoopThread = false;
+            Console.WriteLine($"Destructor");
+        }
+
+        private bool isDisposed = false;
+        public virtual void Dispose()
+        {
+            if (this.isDisposed)
+                return;
+
+            terminateThread();
+
+            isDisposed = true;
+        }
+    }
+
     class Program
     {
+        public static List<testThread> tt = new List<testThread>();
+        public static void AddThread(int id)
+        {
+            var tmp = new testThread(id);
+            tt.Add(tmp);
+        }
         static void Main(string[] args)
         {
+            DateTime unixTimestamp = DateTime.Now;
+            Thread.Sleep(1500);
+            double ts = (DateTime.Now - unixTimestamp).TotalSeconds;
+
+
+            AddThread(1);
+            AddThread(2);
+            Thread.Sleep(4000);
+            tt.RemoveAt(0);
             // UDP server port
             int port = 1308;
             if (args.Length > 0)
